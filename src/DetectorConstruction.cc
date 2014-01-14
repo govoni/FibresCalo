@@ -105,7 +105,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct ()
 
   // make the hole where to insert fibre, and prepare the fibre as well
   G4VSolid * holeS  = new G4Tubs ("hole", 0., fiberClad_radius, 0.5 * fiber_length, 0.*deg, 360.*deg) ;
-  G4VSolid * towerS = new G4SubtractionSolid ("tower", absorberS, hole) ;
+  G4VSolid * towerS = new G4SubtractionSolid ("tower", absorberS, holeS) ;
 
   G4VSolid * fiberCladS    = new G4Tubs ("FiberClad"   , fiberCore_radius         , fiberClad_radius         , 0.5*fiber_length, 0.*deg, 360.*deg) ;    
   G4VSolid * fiberCoreInsS = new G4Tubs ("FiberCoreIns", 0.                       , fiberCore_radius * 0.9999, 0.5*fiber_length, 0.*deg, 360.*deg) ;
@@ -113,8 +113,13 @@ G4VPhysicalVolume* DetectorConstruction::Construct ()
 
   // The LOGICAL AND PHYSICAL VOLUMES
   
+  // the container of the tower structure
+  G4LogicalVolume * towerLV   = new G4LogicalVolume (absorberS, MyMaterials::Air (), "towerLV") ;
+  G4VPhysicalVolume * towerPV = new G4PVPlacement (0, G4ThreeVector (0., 0., 0.), towerLV, "towerPV", calorLV, false, 0, true) ;
+  //PG FIXME here the replica is still missing
+
   // the absorber
-  G4LogicalVolume   * absoLV         = new G4LogicalVolume (towerS, AbsMaterial, "Absorber") ;
+  G4LogicalVolume   * absoLV         = new G4LogicalVolume (towerS, AbMaterial, "Absorber") ;
   G4VPhysicalVolume * fAbsorberPV    = new G4PVPlacement (0, G4ThreeVector (0., 0., 0.), absoLV, "Absorber", towerLV, false, 0, true) ;
 
   // the fibres
@@ -127,10 +132,6 @@ G4VPhysicalVolume* DetectorConstruction::Construct ()
   G4LogicalVolume * fiberCoreInsLV   = new G4LogicalVolume (fiberCoreInsS, CoMaterial, "FiberCoreIns") ;
   G4VPhysicalVolume * fiberCoreInsPV = new G4PVPlacement (0, G4ThreeVector (0., 0., 0.), fiberCoreInsLV, "FiberCoreIns", towerLV, false, 0, true) ;
 
-  // the container of the tower structure
-  G4LogicalVolume * towerLV   = new G4LogicalVolume (absorberS, MyMaterials::Air (), "towerLV") ;
-  G4VPhysicalVolume * towerPV = new G4PVPlacement (0, G4ThreeVector (0., 0., 0.), towerLV, "towerPV", calorLV, false, 0, true) ;
-  //PG FIXME here the replica is still missing
 
   //-----------------------------------------------------
   //------------- Visualization attributes --------------
@@ -157,12 +158,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct ()
   VisAttCalor->SetVisibility (true) ;
   VisAttCalor->SetForceWireframe (true) ;
   calorLV->SetVisAttributes (VisAttCalor) ;
-  
-  G4VisAttributes* VisAttCalor = new G4VisAttributes (yellow) ;
-  VisAttCalor->SetVisibility (true) ;
-  VisAttCalor->SetForceWireframe (true) ;
-  calorLV->SetVisAttributes (VisAttCalor) ;
- 
+
   G4VisAttributes* VisAttAbsorber = new G4VisAttributes (gray) ;
   VisAttAbsorber->SetVisibility (true) ;
   VisAttAbsorber->SetForceWireframe (false) ;
@@ -290,17 +286,15 @@ void DetectorConstruction::fillHexagon (std::vector<G4TwoVector>& hexagon, const
   }
 
 
-
-
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 
 void DetectorConstruction::fillSquare (std::vector<G4TwoVector>& square, const float& halfSide)
   {
     // wrt the centre (0, 0)
-    for (int i = 0 ; i < 4 ; ++i)
-      {
-        square.push_back (G4TwoVector (halfSide  * pow (-1, (i > 2)), halfSide * pow (-1, i+1)) ;
-      }
+    square.push_back (G4TwoVector ( 1 * halfSide , -1 * halfSide)) ;
+    square.push_back (G4TwoVector ( 1 * halfSide ,  1 * halfSide)) ;
+    square.push_back (G4TwoVector (-1 * halfSide ,  1 * halfSide)) ;
+    square.push_back (G4TwoVector (-1 * halfSide , -1 * halfSide)) ;
     return ;
   }

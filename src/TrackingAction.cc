@@ -72,6 +72,7 @@ void TrackingAction::PostUserTrackingAction(const G4Track* aTrack)
       (aTrackInfo->GetParticleName() == "e-"    && aTrackInfo->GetParentName() == "eta") ||
       (aTrackInfo->GetParticleName() == "e+"    && aTrackInfo->GetParentName() == "eta") )
   {
-    CreateTree::Instance()->Total_em_energy += aTrackInfo->GetParticleEnergy()/GeV;
+    ;
+//    CreateTree::Instance()->Total_em_energy += aTrackInfo->GetParticleEnergy()/GeV;
   }
 }

@@ -79,6 +79,8 @@ public:
   G4double GetModule_z () const { return module_z ; } ;
   
   void fillPolygon (std::vector<G4TwoVector>& theBase, const float& side, const float& chamfer) ;
+  void fillSquare (std::vector<G4TwoVector>& theBase, const float& side) ;
+  void fillHexagon (std::vector<G4TwoVector>& theBase, const float& side) ;
   
   std::pair<G4TwoVector,G4TwoVector> getChamfer  (std::vector<G4TwoVector>& theBase, const int& index) ;
   G4TwoVector centerOfTheFirstFiber              (std::pair<G4TwoVector,G4TwoVector>& theChamfer, const int& fibresNumberInRow, const float& fiberExternalRadius, const int& numberOfRadius) ;
@@ -110,18 +112,7 @@ private:
   G4double  module_z ;
   G4int     NtowersOnSide ;
 
-  G4double fiberCore_radius ;
-  G4double fiberClad_radius ;
-
   G4int    abs_material ;
-  G4double abs_d ;
-  
-  G4int    crystal_material ;
-  G4int    crystal_lightyield ;
-  G4double crystal_risetime ;
-  G4double crystal_abslength ;
-  G4double crystal_induced_abslength ;
-  G4double crystal_d ;
   
   G4int    fiberCore_material ;
   G4double fiberCore_radius ;
@@ -136,7 +127,6 @@ private:
   //Materials
   void initializeMaterials () ;
   G4Material* AbMaterial ;
-  G4Material* ScMaterial ;
   G4Material* CoMaterial ;
   G4Material* ClMaterial ;
 } ;

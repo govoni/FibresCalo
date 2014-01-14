@@ -150,7 +150,7 @@ int main(int argc,char** argv)
   G4bool pos_fiber   = 0;
   G4bool opPhotons   = 0;
   G4bool timing      = 0;
-  CreateTree* mytree = new CreateTree("tree", energy_data, init_data, pos_fiber, opPhotons, timing);
+  CreateTree* mytree = new CreateTree ("tree") ;
   
   
   // User Verbose output class
