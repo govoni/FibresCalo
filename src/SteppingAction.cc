@@ -68,7 +68,7 @@ void SteppingAction::UserSteppingAction (const G4Step * theStep)
       // get the deposited energy
       G4double energy = theStep->GetTotalEnergyDeposit () ;
       CreateTree::Instance ()->depositedEnergy += energy/GeV ; 
-//      CreateTree::Instance ()->depositedEnergies[index] += energy/GeV ; 
+      CreateTree::Instance ()->depositedEnergies[index] += energy/GeV ; 
      }  
   return ;  
 }

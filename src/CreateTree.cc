@@ -18,7 +18,7 @@ CreateTree::CreateTree (TString name, int NtowersOnSide)
   std::cout << "CONSTRUCTING CreateTree with " << NtowersOnSide << " elements per side\n" ;   
   this->fNtowersOnSide = NtowersOnSide ;
   this->fNtowersOnSideSQ = NtowersOnSide * NtowersOnSide ;
-  this->depositedEnergies = new float (fNtowersOnSideSQ) ;
+  this->depositedEnergies = new float [fNtowersOnSideSQ] ;
   this->fInstance = this ;
   this->fname     = name ;
   this->ftree     = new TTree (name,name) ;
