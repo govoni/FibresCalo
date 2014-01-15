@@ -14,9 +14,6 @@ private:
   
   TTree*  ftree ;
   TString fname ;
-  std::map <int, std::pair<int, float> > fsingleGammaInfo ;
-  //        photonID       chamferID  lengthInChamfer 
-  // lengthInChamfer is redundant 
   
 public:
   
@@ -31,12 +28,13 @@ public:
   static CreateTree* Instance () { return fInstance ; } ;
   
   // feed the info of each single photon to the tree
-  void               addPhoton (int trackId, float length, int chamferId) ;
+  void               addInputParticle (float ptx, float pty, float ptz, float E) ;
+  void               addEnergy (float energy) ;
 
   static CreateTree* fInstance ;
   
-  int Event ;
-  float totalPhLengthInChamfer[4] ;           // total photons length in chamfers
-  float numPhLengthInChamfer[4] ;             // number of photons in chamfers
+  int   Event ;
+  float depositedEnergy ;
+  float inputMomentum[4] ; // Px Py Pz E
 
 } ;

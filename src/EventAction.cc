@@ -46,9 +46,19 @@ void EventAction::BeginOfEventAction (const G4Event* evt)
   }
   
   CreateTree::Instance ()->Clear () ;
-  
+
+  G4PrimaryParticle * particle = evt->GetPrimaryVertex ()->GetPrimary () ;
+  G4double InitEnergy = particle->GetTotalEnergy () ;
+  G4double px = particle->GetPx () ;
+  G4double py = particle->GetPy () ;
+  G4double pz = particle->GetPz () ;
+
   // INSTANCE RUN/EVENT IN TREE
   CreateTree::Instance ()->Event = evt->GetEventID () ;
+  CreateTree::Instance ()->inputMomentum[0] = px/GeV ;
+  CreateTree::Instance ()->inputMomentum[1] = py/GeV ;
+  CreateTree::Instance ()->inputMomentum[2] = pz/GeV ;
+  CreateTree::Instance ()->inputMomentum[3] = InitEnergy/GeV ;
 }
 
 

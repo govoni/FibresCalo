@@ -19,10 +19,9 @@ CreateTree::CreateTree (TString name)
   this->fname     = name ;
   this->ftree     = new TTree (name,name) ;
   
-  this->GetTree ()->Branch ("Event",                  &this->Event,                  "Event/I") ;
-  this->GetTree ()->Branch ("totalPhLengthInChamfer", &this->totalPhLengthInChamfer, "totalPhLengthInChamfer[4]/F") ;
-  this->GetTree ()->Branch ("numPhLengthInChamfer",   &this->numPhLengthInChamfer,   "numPhLengthInChamfer[4]/I") ;
-  
+  this->GetTree ()->Branch ("Event",           &this->Event,           "Event/I") ;
+  this->GetTree ()->Branch ("depositedEnergy", &this->depositedEnergy, "depositedEnergy/F") ;
+  this->GetTree ()->Branch ("inputMomentum",   &this->inputMomentum,   "inputMomentum[4]/F") ;
   this->Clear () ;
 }
 
@@ -39,12 +38,6 @@ CreateTree::~CreateTree ()
 
 int CreateTree::Fill () 
 { 
-  for (std::map <int, std::pair<int, float> >::const_iterator iMap = fsingleGammaInfo.begin () ;
-       iMap != fsingleGammaInfo.end () ;
-       ++iMap)
-    {
-      ++numPhLengthInChamfer[iMap->second.first] ;
-    }
   return this->GetTree ()->Fill () ; 
 }
 
@@ -67,12 +60,22 @@ bool CreateTree::Write ()
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 
 
-void CreateTree::addPhoton (int trackId, float length, int chamferId)
+void CreateTree::addInputParticle (float ptx, float pty, float ptz, float E)
 {
-  if (fsingleGammaInfo.find (trackId) == fsingleGammaInfo.end ())
-    fsingleGammaInfo[trackId] = std::pair<int, float> (0, length) ;
-  else  
-    fsingleGammaInfo[trackId].second += length ;
+  inputMomentum[0] = ptx ;
+  inputMomentum[1] = pty ;
+  inputMomentum[2] = ptz ;
+  inputMomentum[3] = E ;
+  return ;
+}
+
+
+// ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+
+
+void CreateTree::addEnergy (float energy)
+{
+  depositedEnergy += energy ;
   return ;
 }
 
@@ -83,10 +86,9 @@ void CreateTree::addPhoton (int trackId, float length, int chamferId)
 void CreateTree::Clear ()
 {
   Event	= 0 ;
+  depositedEnergy = 0. ;
   for (int i = 0 ; i < 4 ; ++i) 
     {
-      totalPhLengthInChamfer[i] = 0. ;
-      numPhLengthInChamfer[i] = 0. ;
+      inputMomentum[i] = 0. ;
     }
-  fsingleGammaInfo.clear () ;
 }

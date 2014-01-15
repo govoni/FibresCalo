@@ -56,37 +56,14 @@ void SteppingAction::UserSteppingAction (const G4Step * theStep)
   G4String thePrePVName  = "" ; if ( thePrePV )  thePrePVName  = thePrePV  -> GetName () ;
   G4String thePostPVName = "" ; if ( thePostPV ) thePostPVName = thePostPV -> GetName () ;
 
-//  // optical photon
-//  if ( particleType == G4OpticalPhoton::OpticalPhotonDefinition ())
-//  { 
-//      // Check that the step starts and ends in any of the core volumes of any fibers.
-//      // This includes both the inner and outer unphysical sub-volumes of the core.
-//
-//      std::size_t pos = thePrePVName.find ("FiberCore") ;
-//      if (pos == std::string::npos) return ;
-//      pos   = thePostPVName.find ("FiberCore") ;
-//      if (pos == std::string::npos) return ;
-//
-//      int trackId = theTrack->GetTrackID () ;
-//
-//      // Find the chamfer where the photon is traveling in.
-//      for (int i = 0 ; i < 4 ; ++i)
-//        {
-//          string num_s = static_cast<ostringstream*> ( & (ostringstream () << i) )->str () ;
-//          pos = thePrePVName.find (num_s) ;
-//          if (pos == std::string::npos) continue ;
-//          G4float length = theStep->GetStepLength () ;
-//
-//          // give the length to the chamfer
-//          CreateTree::Instance ()->totalPhLengthInChamfer[i] += length/mm ;    
-//
-//          // sum the lengths for each photon separately
-//          CreateTree::Instance ()->addPhoton (trackId, length/mm, i) ;
-//          
-//          // once entered in a chamfer, does not loop on the following ones
-//          break ;
-//        }
-//
-//   } // optical photon
+  // this is the volume where energy has been deposited
+  if (thePostPVName == "FiberCladPV" ||
+      thePostPVName == "FiberCoreOutPV" ||
+      thePostPVName == "FiberCoreInsPV")
+    {
+      // get the deposited energy
+      G4double energy = theStep->GetTotalEnergyDeposit () ;
+      CreateTree::Instance ()->depositedEnergy += energy/GeV ; 
+     }  
   return ;  
 }

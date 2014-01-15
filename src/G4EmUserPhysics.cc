@@ -111,14 +111,14 @@ void G4EmUserPhysics::ConstructProcess()
     G4ProcessManager* pmanager = particle->GetProcessManager();
     G4String particleName = particle->GetParticleName();
 
-    // turn on the optical photons tracing
+    // turn on the optical photons tracing, the next three ifs
 /*
     if (theCerenkovProcess->IsApplicable(*particle))
     {
       pmanager->AddProcess(theCerenkovProcess);
       pmanager->SetProcessOrdering(theCerenkovProcess,idxPostStep);
     }
-*/    
+
     if (theScintillationProcess->IsApplicable(*particle))
     {
       pmanager->AddProcess(theScintillationProcess);
@@ -134,6 +134,7 @@ void G4EmUserPhysics::ConstructProcess()
       pmanager->AddDiscreteProcess(theMieHGScatteringProcess);
       pmanager->AddDiscreteProcess(theBoundaryProcess);
     }
+*/    
   }
 }
 
