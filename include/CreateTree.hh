@@ -14,7 +14,6 @@ private:
   
   TTree*  ftree ;
   TString fname ;
-  int fNtowersOnSideSQ ;
   
 public:
   
@@ -31,8 +30,10 @@ public:
   
   int   Event ;
   int fNtowersOnSide ;
-  float depositedEnergy ;
-  float inputMomentum[4] ; // Px Py Pz E
-  float * depositedEnergies ;
+  int fNtowersOnSideSQ ;
+  double depositedEnergy ;
+  std::vector<float> * inputMomentum ; // Px Py Pz E
+  std::vector<float> * depositedEnergies ; 
+  std::vector<float> * totalEnergies ; 
 
 } ;

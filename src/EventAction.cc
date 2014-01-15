@@ -55,10 +55,10 @@ void EventAction::BeginOfEventAction (const G4Event* evt)
 
   // INSTANCE RUN/EVENT IN TREE
   CreateTree::Instance ()->Event = evt->GetEventID () ;
-  CreateTree::Instance ()->inputMomentum[0] = px/GeV ;
-  CreateTree::Instance ()->inputMomentum[1] = py/GeV ;
-  CreateTree::Instance ()->inputMomentum[2] = pz/GeV ;
-  CreateTree::Instance ()->inputMomentum[3] = InitEnergy/GeV ;
+  CreateTree::Instance ()->inputMomentum->at (0) = px/GeV ;
+  CreateTree::Instance ()->inputMomentum->at (1) = py/GeV ;
+  CreateTree::Instance ()->inputMomentum->at (2) = pz/GeV ;
+  CreateTree::Instance ()->inputMomentum->at (3) = InitEnergy/GeV ;
 }
 
 

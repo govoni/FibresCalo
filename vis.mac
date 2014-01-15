@@ -76,7 +76,6 @@
 /units/list
 
 
-
 #/gps/energy 10 GeV
 /gps/energy 1 GeV
 /gps/particle e-
@@ -94,4 +93,4 @@
 /gps/direction 0. 0. 1.
 
 #/tracking/verbose 1
-/run/beamOn 10
+#/run/beamOn 1
