@@ -69,8 +69,6 @@ G4VPhysicalVolume* DetectorConstruction::Construct ()
 {
   G4cout << ">>>>>> DetectorConstruction::Construct ()::begin <<<<<<" << G4endl ;
   
-  
-  
   //------------------------------------
   //------------- Geometry -------------
   //------------------------------------
@@ -87,48 +85,34 @@ G4VPhysicalVolume* DetectorConstruction::Construct ()
   G4LogicalVolume * calorLV = new G4LogicalVolume (calorS, MyMaterials::Air (), "Calorimeter") ;
   G4VPhysicalVolume * calorPV = new G4PVPlacement (0, G4ThreeVector (), calorLV, "Calorimeter", worldLV, false, 0, true) ; //FIXME this one even does not have a name
 
-//  // A layer
-//  G4VSolid* layerS = new G4Box ("Layer", 0.5*module_xy, 0.5*module_xy, 0.5*spacing_z) ;
-//  G4LogicalVolume* layerLV = new G4LogicalVolume (layerS, MyMaterials::Air (), "Layer") ;
-//  new G4PVReplica ("Layer", layerLV, calorLV, kZAxis, nLayers_z, spacing_z) ; //FIXME this one even does not have a name
-
-  // The single towers
+  // row of towers, that gets replicated to fill a row
   // ---- ---- ---- ---- ---- ---- ---- ----
-
-  // THE SOLIDS
-    
-  std::vector<G4TwoVector> crystalBase ;
-  fillSquare (crystalBase, 0.5 * module_xy) ;
-
-  // copper prysm, with side module_xy, length module_z
-  G4VSolid * absorberS = new G4ExtrudedSolid ("Absorber", crystalBase, 0.5 * module_z, G4TwoVector (0., 0.), 1., G4TwoVector (0., 0.), 1.) ;
-
-  // make the hole where to insert fibre, and prepare the fibre as well
-  G4VSolid * holeS  = new G4Tubs ("hole", 0., fiberClad_radius, 0.5 * fiber_length, 0.*deg, 360.*deg) ;
-  G4VSolid * towerS = new G4SubtractionSolid ("tower", absorberS, holeS) ;
-
-  G4VSolid * fiberCladS    = new G4Tubs ("FiberClad"   , fiberCore_radius         , fiberClad_radius         , 0.5*fiber_length, 0.*deg, 360.*deg) ;    
-  G4VSolid * fiberCoreInsS = new G4Tubs ("FiberCoreIns", 0.                       , fiberCore_radius * 0.9999, 0.5*fiber_length, 0.*deg, 360.*deg) ;
-  G4VSolid * fiberCoreOutS = new G4Tubs ("FiberCoreOut", fiberCore_radius * 0.9999, fiberCore_radius         , 0.5*fiber_length, 0.*deg, 360.*deg) ;
-
-  // The LOGICAL AND PHYSICAL VOLUMES
+  G4VSolid * rowS = new G4Box ("row", 0.5 * NtowersOnSide * module_xy, 0.5 * module_xy, 0.5 * module_z) ;
+  G4LogicalVolume * rowLV = new G4LogicalVolume (rowS, MyMaterials::Air (), "row") ;
+  G4VPhysicalVolume * matrixPV = new G4PVReplica ("row", rowLV, calorLV, kYAxis, NtowersOnSide, module_xy) ;
   
-  // the container of the tower structure
-  G4LogicalVolume * towerLV   = new G4LogicalVolume (absorberS, MyMaterials::Air (), "towerLV") ;
-  G4VPhysicalVolume * towerPV = new G4PVPlacement (0, G4ThreeVector (0., 0., 0.), towerLV, "towerPV", calorLV, false, 0, true) ;
-  //PG FIXME here the replica is still missing
-
+  // single tower, that gets replicated to fill a row
+  // ---- ---- ---- ---- ---- ---- ---- ----
+  G4VSolid * towerS = new G4Box ("tower", 0.5 * module_xy, 0.5 * module_xy, 0.5 * module_z) ;
+  G4LogicalVolume * towerLV = new G4LogicalVolume (towerS, MyMaterials::Air (), "tower") ;
+  G4VPhysicalVolume * rowPV = new G4PVReplica ("tower", towerLV, rowLV, kXAxis, NtowersOnSide, module_xy) ;
+   
   // the absorber
-  G4LogicalVolume   * absoLV         = new G4LogicalVolume (towerS, AbMaterial, "Absorber") ;
+  G4VSolid * holeS                   = new G4Tubs ("hole", 0., fiberClad_radius, 0.5 * fiber_length, 0.*deg, 360.*deg) ;
+  G4VSolid * absorberS               = new G4SubtractionSolid ("absorber", towerS, holeS) ;
+  G4LogicalVolume   * absoLV         = new G4LogicalVolume (absorberS, AbMaterial, "Absorber") ;
   G4VPhysicalVolume * fAbsorberPV    = new G4PVPlacement (0, G4ThreeVector (0., 0., 0.), absoLV, "Absorber", towerLV, false, 0, true) ;
 
   // the fibres
+  G4VSolid * fiberCladS              = new G4Tubs ("FiberClad", fiberCore_radius, fiberClad_radius, 0.5*fiber_length, 0.*deg, 360.*deg) ;    
   G4LogicalVolume * fiberCladLV      = new G4LogicalVolume (fiberCladS   , ClMaterial, "FiberClad") ;    
   G4VPhysicalVolume * fiberCladPV    = new G4PVPlacement (0, G4ThreeVector (0., 0., 0.), fiberCladLV, "FiberClad", towerLV, false, 0, true) ;
 
+  G4VSolid * fiberCoreOutS           = new G4Tubs ("FiberCoreOut", fiberCore_radius * 0.9999, fiberCore_radius, 0.5*fiber_length, 0.*deg, 360.*deg) ;
   G4LogicalVolume * fiberCoreOutLV   = new G4LogicalVolume (fiberCoreOutS, CoMaterial, "FiberCoreOut") ;
   G4VPhysicalVolume * fiberCoreOutPV = new G4PVPlacement (0, G4ThreeVector (0., 0., 0.), fiberCoreOutLV, "FiberCoreOut", towerLV, false, 0, true) ;
 
+  G4VSolid * fiberCoreInsS           = new G4Tubs ("FiberCoreIns", 0., fiberCore_radius * 0.9999, 0.5*fiber_length, 0.*deg, 360.*deg) ;
   G4LogicalVolume * fiberCoreInsLV   = new G4LogicalVolume (fiberCoreInsS, CoMaterial, "FiberCoreIns") ;
   G4VPhysicalVolume * fiberCoreInsPV = new G4PVPlacement (0, G4ThreeVector (0., 0., 0.), fiberCoreInsLV, "FiberCoreIns", towerLV, false, 0, true) ;
 
