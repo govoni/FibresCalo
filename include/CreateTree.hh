@@ -14,10 +14,11 @@ private:
   
   TTree*  ftree ;
   TString fname ;
+  int fNtowersOnSideSQ ;
   
 public:
   
-  CreateTree (TString name) ;
+  CreateTree (TString name, int NtowersOnSide) ;
   ~CreateTree () ;
   
   TTree*             GetTree  () const { return ftree ; } ;
@@ -26,15 +27,12 @@ public:
   bool               Write    () ;
   void               Clear    () ;
   static CreateTree* Instance () { return fInstance ; } ;
-  
-  // feed the info of each single photon to the tree
-  void               addInputParticle (float ptx, float pty, float ptz, float E) ;
-  void               addEnergy (float energy) ;
-
   static CreateTree* fInstance ;
   
   int   Event ;
+  int fNtowersOnSide ;
   float depositedEnergy ;
   float inputMomentum[4] ; // Px Py Pz E
+  float * depositedEnergies ;
 
 } ;

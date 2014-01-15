@@ -1,6 +1,6 @@
 #include "CreateTree.hh"
 
-
+using namespace std ;
 
 CreateTree* CreateTree::fInstance = NULL ;
 
@@ -8,20 +8,27 @@ CreateTree* CreateTree::fInstance = NULL ;
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 
 
-CreateTree::CreateTree (TString name)
+CreateTree::CreateTree (TString name, int NtowersOnSide)
 {
   if ( fInstance )
   {
     return ;
   }
 
+  std::cout << "CONSTRUCTING CreateTree with " << NtowersOnSide << " elements per side\n" ;   
+  this->fNtowersOnSide = NtowersOnSide ;
+  this->fNtowersOnSideSQ = NtowersOnSide * NtowersOnSide ;
+  this->depositedEnergies = new float (fNtowersOnSideSQ) ;
   this->fInstance = this ;
   this->fname     = name ;
   this->ftree     = new TTree (name,name) ;
   
-  this->GetTree ()->Branch ("Event",           &this->Event,           "Event/I") ;
-  this->GetTree ()->Branch ("depositedEnergy", &this->depositedEnergy, "depositedEnergy/F") ;
-  this->GetTree ()->Branch ("inputMomentum",   &this->inputMomentum,   "inputMomentum[4]/F") ;
+  this->GetTree ()->Branch ("Event",             &this->Event,             "Event/I") ;
+  this->GetTree ()->Branch ("depositedEnergy",   &this->depositedEnergy,   "depositedEnergy/F") ;
+  this->GetTree ()->Branch ("inputMomentum",     &this->inputMomentum,     "inputMomentum[4]/F") ;
+  char text[30] ;
+  sprintf (text, "depositedEnergies[%d]/F", fNtowersOnSideSQ) ;
+  this->GetTree ()->Branch ("depositedEnergies", &this->depositedEnergies, text) ;
   this->Clear () ;
 }
 
@@ -60,29 +67,6 @@ bool CreateTree::Write ()
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 
 
-void CreateTree::addInputParticle (float ptx, float pty, float ptz, float E)
-{
-  inputMomentum[0] = ptx ;
-  inputMomentum[1] = pty ;
-  inputMomentum[2] = ptz ;
-  inputMomentum[3] = E ;
-  return ;
-}
-
-
-// ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
-
-
-void CreateTree::addEnergy (float energy)
-{
-  depositedEnergy += energy ;
-  return ;
-}
-
-
-// ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
-
-
 void CreateTree::Clear ()
 {
   Event	= 0 ;
@@ -90,5 +74,9 @@ void CreateTree::Clear ()
   for (int i = 0 ; i < 4 ; ++i) 
     {
       inputMomentum[i] = 0. ;
+    }
+  for (int i = 0 ; i < fNtowersOnSideSQ ; ++i) 
+    {
+      depositedEnergies[i] = 0. ;
     }
 }

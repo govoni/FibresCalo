@@ -40,7 +40,7 @@ EventAction::~EventAction ()
 void EventAction::BeginOfEventAction (const G4Event* evt)
 {
   G4int evtNb = evt->GetEventID () ;
-  if ( evtNb%1 == 0 ) 
+  if ( evtNb%20 == 0 ) 
   {
     G4cout << "---> Begin of Event: " << evtNb << G4endl ;
   }

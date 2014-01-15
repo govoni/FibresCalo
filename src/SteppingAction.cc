@@ -28,7 +28,7 @@
 #include "TTree.h"
 #include "TString.h"
 
-
+using namespace std ;
 
 SteppingAction::SteppingAction ()
 {}
@@ -49,10 +49,10 @@ void SteppingAction::UserSteppingAction (const G4Step * theStep)
   G4Track* theTrack = theStep->GetTrack () ;
   G4ParticleDefinition* particleType = theTrack->GetDefinition () ;
   
-  G4StepPoint* thePrePoint  = theStep->GetPreStepPoint () ;
-  G4StepPoint* thePostPoint = theStep->GetPostStepPoint () ;
-  G4VPhysicalVolume* thePrePV  = thePrePoint ->GetPhysicalVolume () ;
-  G4VPhysicalVolume* thePostPV = thePostPoint->GetPhysicalVolume () ;
+  G4StepPoint * thePrePoint  = theStep->GetPreStepPoint () ;
+  G4StepPoint * thePostPoint = theStep->GetPostStepPoint () ;
+  G4VPhysicalVolume * thePrePV  = thePrePoint->GetPhysicalVolume () ;
+  G4VPhysicalVolume * thePostPV = thePostPoint->GetPhysicalVolume () ;
   G4String thePrePVName  = "" ; if ( thePrePV )  thePrePVName  = thePrePV  -> GetName () ;
   G4String thePostPVName = "" ; if ( thePostPV ) thePostPVName = thePostPV -> GetName () ;
 
@@ -61,9 +61,14 @@ void SteppingAction::UserSteppingAction (const G4Step * theStep)
       thePostPVName == "FiberCoreOutPV" ||
       thePostPVName == "FiberCoreInsPV")
     {
+      int index = thePostPoint->GetTouchable ()->GetReplicaNumber (1) 
+                   * CreateTree::Instance ()->fNtowersOnSide +
+                  thePostPoint->GetTouchable ()->GetReplicaNumber (2) ;
+
       // get the deposited energy
       G4double energy = theStep->GetTotalEnergyDeposit () ;
       CreateTree::Instance ()->depositedEnergy += energy/GeV ; 
+//      CreateTree::Instance ()->depositedEnergies[index] += energy/GeV ; 
      }  
   return ;  
 }

@@ -144,14 +144,8 @@ int main(int argc,char** argv)
   G4cout << "Random seed : " << myseed << G4endl;
   CLHEP::HepRandom::setTheSeed(myseed);
   
-  
-  G4bool energy_data = 0;
-  G4bool init_data   = 1;
-  G4bool pos_fiber   = 0;
-  G4bool opPhotons   = 0;
-  G4bool timing      = 0;
-  CreateTree* mytree = new CreateTree ("tree") ;
-  
+  int NtowersOnSide = config.read<int> ("NtowersOnSide") ;
+  CreateTree* mytree = new CreateTree ("tree", NtowersOnSide) ;
   
   // User Verbose output class
   //

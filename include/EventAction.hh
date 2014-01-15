@@ -23,6 +23,8 @@ class EventAction : public G4UserEventAction
 
     void BeginOfEventAction(const G4Event*);
     void EndOfEventAction(const G4Event*);
+    
+    int NtowersOnSide ;
 };
 
 
