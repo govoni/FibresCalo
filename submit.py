@@ -13,7 +13,7 @@ import datetime
 def prepareJob (jobID):
     filename = 'job_' + jobID
     f = open (filename, 'w')
-    f.write ('cd /afs/cern.ch/user/g/govoni/w0/fibresCalo/FibresCalo\n')
+    f.write ('cd /afs/cern.ch/user/g/govoni/scratch0/fibresCalo/FibresCalo\n')
     f.write ('source setup_lxplus.sh\n')
     f.write ('/afs/cern.ch/user/g/govoni/geant4_workdir/bin/Linux-g++/FibresCalo config.cfg out_' + jobID + '\n')
     f.close ()

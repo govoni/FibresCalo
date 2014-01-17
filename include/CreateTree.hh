@@ -33,6 +33,7 @@ public:
   int fNtowersOnSideSQ ;
   double depositedEnergy ;
   std::vector<float> * inputMomentum ; // Px Py Pz E
+  std::vector<float> * inputInitialPosition ; // x, y, z
   std::vector<float> * depositedEnergies ; 
   std::vector<float> * totalEnergies ; 
 

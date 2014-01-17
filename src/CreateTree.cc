@@ -18,14 +18,16 @@ CreateTree::CreateTree (TString name, int NtowersOnSide)
   std::cout << "CONSTRUCTING CreateTree with " << NtowersOnSide << " elements per side\n" ;   
   this->fNtowersOnSide = NtowersOnSide ;
   this->fNtowersOnSideSQ = NtowersOnSide * NtowersOnSide ;
-  inputMomentum     = new std::vector<float> (4, 0.) ; 
   this->fInstance = this ;
   this->fname     = name ;
   this->ftree     = new TTree (name,name) ;
 
   this->GetTree ()->Branch ("Event",             &this->Event,           "Event/I") ;
   this->GetTree ()->Branch ("depositedEnergy",   &this->depositedEnergy, "depositedEnergy/D") ;
+  inputMomentum = new std::vector<float> (4, 0.) ; 
   this->GetTree ()->Branch ("inputMomentum",     "std::vector<float>",   &inputMomentum) ;
+  inputInitialPosition = new std::vector<float> (3, 0.) ; 
+  this->GetTree ()->Branch ("inputInitialPosition",     "std::vector<float>",   &inputInitialPosition) ;
   depositedEnergies = new std::vector<float> (fNtowersOnSideSQ, 0.) ; 
   this->GetTree ()->Branch ("depositedEnergies", "std::vector<float>",   &depositedEnergies) ;
   totalEnergies = new std::vector<float> (fNtowersOnSideSQ, 0.) ; 
@@ -76,6 +78,10 @@ void CreateTree::Clear ()
   for (int i = 0 ; i < 4 ; ++i) 
     {
       inputMomentum->at (i) = 0. ;
+    }
+  for (int i = 0 ; i < 3 ; ++i) 
+    {
+      inputInitialPosition->at (i) = 0. ;
     }
   for (int i = 0 ; i < fNtowersOnSideSQ ; ++i) 
     {
