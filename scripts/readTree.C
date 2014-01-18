@@ -1,8 +1,8 @@
 {
    gROOT->Reset();
-   int fNtowersOnSide = 50 ;
+   int fNtowersOnSide = 49 ;
    float maxEnergy = 1. ; // gev
-   TFile *f = new TFile ("test.root") ;
+   TFile *f = new TFile ("outTot_square_49x49.root") ;
    TTree * t = (TTree *) f->Get ("tree") ;
    double depositedEnergy ;
    int fNtowersOnSideSQ = fNtowersOnSide * fNtowersOnSide ;

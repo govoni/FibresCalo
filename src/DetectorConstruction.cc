@@ -160,9 +160,14 @@ G4VPhysicalVolume* DetectorConstruction::Construct ()
   fiberCladLV->SetVisAttributes (VisAttFiberClad) ;  
 
   G4VisAttributes* VisAttLayer = new G4VisAttributes (blue) ;
-  VisAttLayer->SetVisibility (true) ;
+  VisAttLayer->SetVisibility (false) ;
   VisAttLayer->SetForceWireframe (false) ;
   towerLV->SetVisAttributes (VisAttLayer) ;
+
+  G4VisAttributes* VisAttRow = new G4VisAttributes (blue) ;
+  VisAttRow->SetVisibility (false) ;
+  VisAttRow->SetForceWireframe (false) ;
+  rowLV->SetVisAttributes (VisAttLayer) ;
 
   G4cout << ">>>>>> DetectorConstruction::Construct ()::end <<< " << G4endl ;
   return worldPV ;

@@ -23,7 +23,7 @@ void plotResolution (TString inputFile)
    // init tree and basic vars
    // ---- ---- ---- ---- ---- ---- ----
 
-   int fNtowersOnSide = 50 ;
+   int fNtowersOnSide = 49 ;
    float maxEnergy = 1. ; // gev
    TFile * f = new TFile (inputFile) ;
    TTree * t = (TTree *) f->Get ("tree") ;
@@ -40,10 +40,14 @@ void plotResolution (TString inputFile)
    t->SetBranchAddress ("totalEnergies", &totalEnergies) ;
    std::vector<float> * inputMomentum = new std::vector<float> (4) ; 
    t->SetBranchAddress ("inputMomentum", &inputMomentum) ;
+   std::vector<float> * inputInitialPosition = new std::vector<float> (3) ; 
+   t->SetBranchAddress ("inputInitialPosition", &inputInitialPosition) ;
   
-   TH1F h_ErecoOverEgen ("h_ErecoOverEgen", "ErecoOverEgen", 200, 0, 0.002) ;
+   TH1F h_ErecoOverEgen ("h_ErecoOverEgen", "ErecoOverEgen", 400, 0, 0.002) ;
    TH2F h_ErecoOverEgen_vs_Ebeam ("h_ErecoOverEgen_vs_Ebeam", "h_ErecoOverEgen_vs_Ebeam", 
                                    45, 5, 50, 200, 0, 0.002) ;
+   TH3F h_ErecoOverEgen_vs_impact ("h_ErecoOverEgen_vs_impact", "h_ErecoOverEgen_vs_impact", 
+                                   40, -2., 2., 40, -2., 2., 400, 0, 0.002) ;
 
    TH1F h_EdepOverEgen ("h_EdepOverEgen", "EdepOverEgen", 100, 0, 1) ;
    TH2F h_EdepOverEgen_vs_Ebeam ("h_EdepOverEgen_vs_Ebeam", "h_EdepOverEgen_vs_Ebeam", 
@@ -67,25 +71,19 @@ void plotResolution (TString inputFile)
             fullEnergy += totalEnergies->at (j) ;
           }
         float beamEnergy = inputMomentum->at (3) ;
-        if (observedEnergy * 2835.3350799 > beamEnergy * 2) 
-          {
-            cout << "WARNING: obs energy too large wrt beam energy: " 
-                 << observedEnergy * 2835.3350799 
-                 << " / " << beamEnergy << " > 2, ignoring event" << endl ;
-            continue ;   
-          }   
         float ErecoOverEgen = observedEnergy / beamEnergy ;
         h_ErecoOverEgen.Fill (ErecoOverEgen) ;
         h_ErecoOverEgen_vs_Ebeam.Fill (beamEnergy, ErecoOverEgen) ;
-
+        h_ErecoOverEgen_vs_impact.Fill (inputInitialPosition->at (0),
+            inputInitialPosition->at (1), ErecoOverEgen) ;  
         float EdepOverEgen = fullEnergy / beamEnergy ;
         h_EdepOverEgen.Fill (EdepOverEgen) ;
         h_EdepOverEgen_vs_Ebeam.Fill (beamEnergy, EdepOverEgen) ;
 
         if (EdepOverEgen < 0.7) continue ;
 
-        // 1/3.52692e-04 = 2835.3350799
-        float sigmaEoverE = (observedEnergy * 2835.3350799 - beamEnergy) / beamEnergy ;
+        // 1/3.75307e-04 = 2664.48534133
+        float sigmaEoverE = (observedEnergy * 2664.48534133 - beamEnergy) / beamEnergy ;
         h_sigmaEoverE.Fill (sigmaEoverE) ;
         h_sigmaEoverE_vs_Ebeam.Fill (beamEnergy, sigmaEoverE) ;
      }
@@ -94,22 +92,32 @@ void plotResolution (TString inputFile)
    outfile.cd () ;
    h_ErecoOverEgen.Write () ;
    h_ErecoOverEgen_vs_Ebeam.Write () ;
+   h_ErecoOverEgen_vs_impact.Write () ;
    h_EdepOverEgen.Write () ;
    h_EdepOverEgen_vs_Ebeam.Write () ;
    h_sigmaEoverE.Write () ;
    h_sigmaEoverE_vs_Ebeam.Write () ;
 
    outfile.Close () ;
-   
+
    return ;
-
-
 }
 
 /*
+Calibration factor for the small beam hitting in a perpendicular manner
+the tungsten, at the crossing of four towers
   EXT PARAMETER                                   STEP         FIRST   
   NO.   NAME      VALUE            ERROR          SIZE      DERIVATIVE 
    1  Constant     1.25579e+03   2.02423e+01   1.16628e-01   1.83615e-06
    2  Mean         3.52692e-04   4.27726e-07   2.29938e-09   9.59803e+01
    3  Sigma        2.13923e-05   3.38120e-07   2.51361e-05  -3.62594e-03
+
+
+3 deg tilt in x and y
+  EXT PARAMETER                                   STEP         FIRST   
+  NO.   NAME      VALUE            ERROR          SIZE      DERIVATIVE 
+   1  Constant     5.57118e+03   3.23749e+01   3.00224e-01   1.04774e-05
+   2  Mean         3.75307e-04   8.13582e-08   9.83419e-10   3.77431e+03
+   3  Sigma        1.82463e-05   6.86203e-08   1.12823e-05  -8.04320e-01
+
 */
