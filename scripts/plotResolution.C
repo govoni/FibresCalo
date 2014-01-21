@@ -59,17 +59,19 @@ void plotResolution (TString inputFile)
 
    Int_t nentries = tree->GetEntries () ;
    cout << "found " << nentries << " events\n" ;
+   //PG loop over events
    for (Int_t iEntry = 0 ; iEntry < nentries ; ++iEntry) 
      {
         if (iEntry % 100 == 0) cout << "reading event " << iEntry << endl ;
         t->GetEvent (iEntry) ;
         float observedEnergy = 0. ;
         float fullEnergy = 0. ;
+        //PG loop over fibres
         for (int j = 0 ; j < fNtowersOnSideSQ ; ++j)
           {
             observedEnergy += smearEnergy (depositedEnergies->at (j)) ;
             fullEnergy += totalEnergies->at (j) ;
-          }
+          } //PG loop over fibres
         float beamEnergy = inputMomentum->at (3) ;
         float ErecoOverEgen = observedEnergy / beamEnergy ;
         h_ErecoOverEgen.Fill (ErecoOverEgen) ;
@@ -86,7 +88,7 @@ void plotResolution (TString inputFile)
         float sigmaEoverE = (observedEnergy * 2664.48534133 - beamEnergy) / beamEnergy ;
         h_sigmaEoverE.Fill (sigmaEoverE) ;
         h_sigmaEoverE_vs_Ebeam.Fill (beamEnergy, sigmaEoverE) ;
-     }
+     } //PG loop over events
 
    TFile outfile ("plotResolution.root", "recreate") ;
    outfile.cd () ;
@@ -116,8 +118,9 @@ the tungsten, at the crossing of four towers
 3 deg tilt in x and y
   EXT PARAMETER                                   STEP         FIRST   
   NO.   NAME      VALUE            ERROR          SIZE      DERIVATIVE 
-   1  Constant     5.57118e+03   3.23749e+01   3.00224e-01   1.04774e-05
-   2  Mean         3.75307e-04   8.13582e-08   9.83419e-10   3.77431e+03
-   3  Sigma        1.82463e-05   6.86203e-08   1.12823e-05  -8.04320e-01
+   1  Constant     5.57106e+03   3.23771e+01   3.04749e-01   5.08917e-07
+   2  Mean         3.75307e-04   8.13579e-08   9.98260e-10   1.09851e+04
+   3  Sigma        1.82467e-05   6.86340e-08   1.14167e-05  -6.49054e-01
+
 
 */

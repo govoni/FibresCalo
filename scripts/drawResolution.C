@@ -18,7 +18,7 @@ int drawResolution (TString inputFile)
   TVirtualFitter::SetDefaultFitter ("Minuit2") ;
   TFile * f = new TFile (inputFile) ;
 
-  // correct for the deposit pattern
+  // x, y deposit pattern drawings
   // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 
   TH3F * h_ErecoOverEgen_vs_impact = (TH3F *) f->Get ("h_ErecoOverEgen_vs_impact") ;
@@ -50,23 +50,30 @@ int drawResolution (TString inputFile)
   sigmaEoverE_vs_Ebeam->GetXaxis ()->SetTitle ("E_{beam}") ;
   sigmaEoverE_vs_Ebeam->GetYaxis ()->SetTitle ("#sigma_{E} / E") ;
   sigmaEoverE_vs_Ebeam->FitSlicesY () ;
+
   TH1D * mean = (TH1D *) gDirectory->Get ("sigmaEoverE_vs_Ebeam_1") ;
   mean->SetMarkerStyle (4) ;
-  mean->GetYaxis ()->SetTitle ("#sigma_{E} / E") ;
+  mean->GetYaxis ()->SetTitle ("bias / E") ;
 
-  TCanvas * c1 = new TCanvas ;
+  TH1D * sigma = (TH1D *) gDirectory->Get ("sigmaEoverE_vs_Ebeam_2") ;
+  sigma->SetMarkerStyle (4) ;
+  sigma->GetYaxis ()->SetTitle ("#sigma_{E} / E") ;
+  sigma->Draw () ;
+
+  TCanvas * c0 = new TCanvas () ;
   sigmaEoverE_vs_Ebeam->Draw ("colz") ;
-  c1->Print ("resolution_raw.pdf", "pdf") ;
+  c0->Print ("resolution_raw.pdf", "pdf") ;
 
   gStyle->SetOptStat (0000000) ;
   gStyle->SetOptFit (1111) ;
 
   TF1 * resolution = new TF1 ("resolution", resol , 0, 200., 3) ;
+  resolution->SetLineColor (kBlack) ;
   resolution->SetParLimits (0, 0., 100.) ;  
   resolution->SetParLimits (1, 0., 100.) ;  
-  resolution->SetParLimits (2, 0., 2. * mean->GetBinContent (mean->GetNbinsX () - 1 )) ;  
-  resolution->SetParameter (2, mean->GetBinContent (mean->GetNbinsX () - 1 )) ;
-  mean->Fit (resolution) ;
+  resolution->SetParLimits (2, 0., 2. * sigma->GetBinContent (sigma->GetNbinsX () - 1 )) ;  
+  resolution->SetParameter (2, sigma->GetBinContent (sigma->GetNbinsX () - 1 )) ;
+  sigma->Fit (resolution) ;
   TF1 * noise = new TF1 ("noise", "[0] / x" ,0, 200.) ;
   noise->SetParameter (0, resolution->GetParameter (0)) ;
   noise->SetLineColor (kRed) ;
@@ -77,14 +84,17 @@ int drawResolution (TString inputFile)
   constant->SetParameter (0, resolution->GetParameter (2)) ;
   constant->SetLineColor (kGreen + 2) ;
   
-  mean->Draw () ;
+  TCanvas * c1 = new TCanvas () ;
+  c1->DrawFrame (0, 0, 80, 0.1) ;
+
+  sigma->Draw ("sameS") ;
   resolution->Draw ("same") ;
   noise->Draw ("same") ;
   stochastic->Draw ("same") ;
   constant->Draw ("same") ;
   
-  TLegend * leg = new TLegend (0.12,0.12,0.4,0.36) ;
-  leg->SetFillStyle (0) ;
+  TLegend * leg = new TLegend (0.28,0.6,0.6,0.94) ;
+  leg->SetFillColor (kWhite) ;
   leg->AddEntry (resolution, "resolution","l") ;
   leg->AddEntry (constant, "constant term","l") ;
   leg->AddEntry (noise, "noise term","l") ;
@@ -94,10 +104,7 @@ int drawResolution (TString inputFile)
   c1->Print ("resolution_fit.pdf", "pdf") ;
 
   TCanvas * c2 = new TCanvas () ;
-  TH1D * sigma = (TH1D *) gDirectory->Get ("sigmaEoverE_vs_Ebeam_2") ;
-  sigma->SetMarkerStyle (4) ;
-  sigma->GetYaxis ()->SetTitle ("#epsilon (#sigma_{E} / E)") ;
-  sigma->Draw () ;
-  c2->Print ("resolution_uncertainty.pdf", "pdf") ;
+  mean->Draw () ;
+  c2->Print ("bias.pdf", "pdf") ;
 }  
 
