@@ -167,8 +167,10 @@ void plotResolution (TString inputFile)
 
 //        if (EdepOverEgen < 0.7) continue ;
 
-        // 1/3.75307e-02 = 26.6448534133
-        float sigmaEoverE = (observedEnergy * 26.6448534133 - beamEnergy) / beamEnergy ;
+        // 1/3.75307e-02 = 26.6448534133 W, 3 degrees tilt
+//        float sigmaEoverE = (observedEnergy * 26.6448534133 - beamEnergy) / beamEnergy ;
+        float sigmaEoverE = (observedEnergy * 18.9533936051 - beamEnergy) / beamEnergy ;
+        //1/5.27610e-02 = 18.9533936051 Pb, 3 degrees tilt
         h_sigmaEoverE.Fill (sigmaEoverE) ;
         h_sigmaEoverE_vs_Ebeam.Fill (beamEnergy, sigmaEoverE) ;
      } //PG loop over events
@@ -209,6 +211,13 @@ with 3 deg tilt in x and y
    1  Constant     5.57106e+03   3.23771e+01   3.04749e-01   5.08917e-07
    2  Mean         3.75307e-04   8.13579e-08   9.98260e-10   1.09851e+04
    3  Sigma        1.82467e-05   6.86340e-08   1.14167e-05  -6.49054e-01
+
+Calibration factor for the Pb absorber
+  EXT PARAMETER                                   STEP         FIRST   
+  NO.   NAME      VALUE            ERROR          SIZE      DERIVATIVE 
+   1  Constant     6.12723e+03   3.29126e+01   3.00227e-01  -2.30550e-05
+   2  Mean         5.27610e-02   7.92208e-06   9.38113e-08   8.05117e+01
+   3  Sigma        1.91448e-03   6.58913e-06   1.01739e-05  -1.54064e-01
 
 
 */
