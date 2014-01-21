@@ -34,7 +34,13 @@ public:
   double depositedEnergy ;
   std::vector<float> * inputMomentum ; // Px Py Pz E
   std::vector<float> * inputInitialPosition ; // x, y, z
-  std::vector<float> * depositedEnergies ; 
+  // energy deposited in each fibre of a tower,
+  // sorted by position in the square matrix of the detector
+  // the (i,j) index in the matrix becomes NjTot * j + i in this vector
+  std::vector<float> * depositedEnergies ;
+  // energy deposited in each tower (absorber + fibre),
+  // sorted by position in the square matrix of the detector
+  // the (i,j) index in the matrix becomes NjTot * j + i in this vector
   std::vector<float> * totalEnergies ; 
 
 } ;

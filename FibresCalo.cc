@@ -174,7 +174,9 @@ int main(int argc,char** argv)
   
   if ( physName == "" || factory.IsReferencePhysList(physName))
   {
-    physName = "FTFP_BERT";
+//    physName = "FTFP_BERT";
+    physName = "FTFP_BERT_EMV"; // less precise, but supposed to be faster
+                                // it might be the one used by CMS
   }
   
   std::cout << "Using physics list: " << physName << std::endl; 

@@ -56,15 +56,15 @@ void SteppingAction::UserSteppingAction (const G4Step * theStep)
   G4String thePrePVName  = "" ; if ( thePrePV )  thePrePVName  = thePrePV  -> GetName () ;
   G4String thePostPVName = "" ; if ( thePostPV ) thePostPVName = thePostPV -> GetName () ;
 
-  int index = thePostPoint->GetTouchable ()->GetReplicaNumber (1) 
-               * CreateTree::Instance ()->fNtowersOnSide +
-              thePostPoint->GetTouchable ()->GetReplicaNumber (2) ;
-
   // this is the volume where energy has been deposited
   if (thePostPVName == "FiberCladPV" ||
       thePostPVName == "FiberCoreOutPV" ||
       thePostPVName == "FiberCoreInsPV")
     {
+      int index = thePostPoint->GetTouchable ()->GetReplicaNumber (1) 
+                   * CreateTree::Instance ()->fNtowersOnSide +
+                  thePostPoint->GetTouchable ()->GetReplicaNumber (2) ;
+
       assert (index < CreateTree::Instance ()->fNtowersOnSideSQ) ;
       assert (index >= 0) ;
       
@@ -76,6 +76,10 @@ void SteppingAction::UserSteppingAction (const G4Step * theStep)
      }  
   if (thePostPVName == "AbsorberPV")
     {
+      int index = thePostPoint->GetTouchable ()->GetReplicaNumber (1) 
+                   * CreateTree::Instance ()->fNtowersOnSide +
+                  thePostPoint->GetTouchable ()->GetReplicaNumber (2) ;
+
       assert (index < CreateTree::Instance ()->fNtowersOnSideSQ) ;
       assert (index >= 0) ;
       G4double energy = theStep->GetTotalEnergyDeposit () ;
