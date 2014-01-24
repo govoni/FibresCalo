@@ -78,12 +78,18 @@ G4VPhysicalVolume* DetectorConstruction::Construct ()
   G4VSolid * worldS = new G4Box ("World", 0.5*expHall_x, 0.5*expHall_y, 0.5*expHall_z) ;
   G4LogicalVolume * worldLV = new G4LogicalVolume (worldS, MyMaterials::Air (), "World", 0, 0, 0) ;
   G4VPhysicalVolume * worldPV = new G4PVPlacement (0, G4ThreeVector (), worldLV, "World", 0, false, 0, true) ;
+
+  // The block of material after the calorimeter
+  // ---- ---- ---- ---- ---- ---- ---- ----
+  G4VSolid * postShowerS = new G4Box ("postShowerS", 0.5 * NtowersOnSide * module_xy, 0.5 * NtowersOnSide * module_xy, 0.5 * module_z) ;
+  G4LogicalVolume * postShowerLV = new G4LogicalVolume (postShowerS, AbMaterial, "postShowerLV") ;
+  G4VPhysicalVolume * postShowerPV = new G4PVPlacement (0, G4ThreeVector (0., 0., module_z), postShowerLV, "postShowerPV", worldLV, false, 0, true) ;
     
   // The calorimeter
   // ---- ---- ---- ---- ---- ---- ---- ----
   G4VSolid * calorS = new G4Box ("CalorimeterS", 0.5 * NtowersOnSide * module_xy, 0.5 * NtowersOnSide * module_xy, 0.5 * module_z) ;
   G4LogicalVolume * calorLV = new G4LogicalVolume (calorS, MyMaterials::Air (), "CalorimeterLV") ;
-  G4VPhysicalVolume * calorPV = new G4PVPlacement (0, G4ThreeVector (), calorLV, "CalorimeterPV", worldLV, false, 0, true) ; //FIXME this one even does not have a name
+  G4VPhysicalVolume * calorPV = new G4PVPlacement (0, G4ThreeVector (), calorLV, "CalorimeterPV", worldLV, false, 0, true) ;
 
   // row of towers, that gets replicated to fill a row
   // ---- ---- ---- ---- ---- ---- ---- ----
@@ -142,6 +148,11 @@ G4VPhysicalVolume* DetectorConstruction::Construct ()
   VisAttCalor->SetVisibility (true) ;
   VisAttCalor->SetForceWireframe (true) ;
   calorLV->SetVisAttributes (VisAttCalor) ;
+
+  G4VisAttributes* VisAttPostShower = new G4VisAttributes (yellow) ;
+  VisAttPostShower->SetVisibility (false) ;
+  VisAttPostShower->SetForceWireframe (true) ;
+  postShowerLV->SetVisAttributes (VisAttPostShower) ;
 
   G4VisAttributes* VisAttAbsorber = new G4VisAttributes (gray) ;
   VisAttAbsorber->SetVisibility (true) ;
