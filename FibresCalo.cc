@@ -134,7 +134,9 @@ int main(int argc,char** argv)
   CLHEP::HepRandom::setTheSeed(myseed);
   
   int NtowersOnSide = config.read<int> ("NtowersOnSide") ;
-  CreateTree* mytree = new CreateTree ("tree", NtowersOnSide) ;
+  float module_xy = config.read<float> ("module_xy") ;
+  float module_z = config.read<float> ("module_z") ;
+  CreateTree* mytree = new CreateTree ("tree", NtowersOnSide, module_xy, module_z) ;
   
   // User Verbose output class
   //
@@ -261,6 +263,7 @@ int main(int argc,char** argv)
     
     mytree -> GetTree() -> Write() ;
     mytree->stepDeposits->Write () ;
+    mytree->leakeage->Write () ;
     outfile -> Close();
   }
   

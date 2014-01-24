@@ -3,6 +3,7 @@
 #include <map>
 
 #include "TNtuple.h"
+#include "TH2F.h"
 #include "TH3F.h"
 #include "TFile.h"
 #include "TTree.h"
@@ -19,7 +20,7 @@ private:
   
 public:
   
-  CreateTree (TString name, int NtowersOnSide) ;
+  CreateTree (TString name, int NtowersOnSide, float module_xy, float module_z) ;
   ~CreateTree () ;
   
   TTree*             GetTree  () const { return ftree ; } ;
@@ -48,5 +49,6 @@ public:
   std::vector<float> * totalEnergies ; 
   
   TNtuple * stepDeposits ;
+  TH2F * leakeage ;
 
 } ;

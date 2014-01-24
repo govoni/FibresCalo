@@ -8,7 +8,7 @@ CreateTree* CreateTree::fInstance = NULL ;
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 
 
-CreateTree::CreateTree (TString name, int NtowersOnSide)
+CreateTree::CreateTree (TString name, int NtowersOnSide, float module_xy, float module_z)
 {
   if ( fInstance )
   {
@@ -35,7 +35,11 @@ CreateTree::CreateTree (TString name, int NtowersOnSide)
   this->GetTree ()->Branch ("totalEnergies", "std::vector<float>",   &totalEnergies) ;
   
   stepDeposits = new TNtuple ("stepDeposits", "stepDeposits", "x:y:z:E") ;
-
+  float side = NtowersOnSide * module_xy ;
+  float precision = 0.1 ; // mm
+  leakeage = new TH2F ("leakeage", "leakeage", 
+                       int (side / precision), -1 * side, side, 
+                       int (side / precision), -1 * side, side) ;
   this->Clear () ;  
 }
 

@@ -56,6 +56,7 @@ void SteppingAction::UserSteppingAction (const G4Step * theStep)
   G4VPhysicalVolume * thePostPV = thePostPoint->GetPhysicalVolume () ;
   G4String thePrePVName  = "" ; if ( thePrePV )  thePrePVName  = thePrePV  -> GetName () ;
   G4String thePostPVName = "" ; if ( thePostPV ) thePostPVName = thePostPV -> GetName () ;
+  G4double energy = theStep->GetTotalEnergyDeposit () ;
 
   // this is the volume where energy has been deposited
   if (thePostPVName == "FiberCladPV" ||
@@ -70,7 +71,6 @@ void SteppingAction::UserSteppingAction (const G4Step * theStep)
       assert (index >= 0) ;
       
       // get the deposited energy
-      G4double energy = theStep->GetTotalEnergyDeposit () ;
       CreateTree::Instance ()->depositedEnergy += energy/GeV ; 
       CreateTree::Instance ()->depositedEnergies->at (index) += energy/GeV ; 
       CreateTree::Instance ()->totalEnergies->at (index) += energy/GeV ; 
@@ -83,7 +83,7 @@ void SteppingAction::UserSteppingAction (const G4Step * theStep)
           energy/GeV
         ) ; 
      }  
-  if (thePostPVName == "AbsorberPV")
+  else if (thePostPVName == "AbsorberPV")
     {
       int index = thePostPoint->GetTouchable ()->GetReplicaNumber (1) 
                    * CreateTree::Instance ()->fNtowersOnSide +
@@ -91,7 +91,6 @@ void SteppingAction::UserSteppingAction (const G4Step * theStep)
 
       assert (index < CreateTree::Instance ()->fNtowersOnSideSQ) ;
       assert (index >= 0) ;
-      G4double energy = theStep->GetTotalEnergyDeposit () ;
       CreateTree::Instance ()->totalEnergies->at (index) += energy/GeV ; 
       CreateTree::Instance ()->stepDeposits->Fill (
 //          PPposition.x () - CreateTree::Instance ()->inputInitialPosition->at (0),
@@ -102,10 +101,16 @@ void SteppingAction::UserSteppingAction (const G4Step * theStep)
           energy/GeV
         ) ; 
     }
-  if (thePostPVName == "postShowerPV")
+  else if (thePostPVName == "postShowerPV")
     {
-      G4double energy = theStep->GetTotalEnergyDeposit () ;
       CreateTree::Instance ()->leakageEnergy += energy/GeV ; 
+      CreateTree::Instance ()->leakeage->Fill (
+            PPposition.x (), PPposition.y (), energy/GeV) ;
     }
+  else 
+    {
+      CreateTree::Instance ()->leakeage->Fill (
+            PPposition.x (), PPposition.y (), energy/GeV) ;
+    }  
   return ;  
 }

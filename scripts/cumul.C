@@ -15,7 +15,7 @@ TH1D * cumul (TH1D * input_h)
   return output_h ;
 }
 
-double radius (TH1D * input_h)
+double radius (TH1F * input_h)
 {
   Double_t total = input_h->Integral () ;
   Double_t cumul = 0. ;
