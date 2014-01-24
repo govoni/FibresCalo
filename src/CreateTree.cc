@@ -23,7 +23,8 @@ CreateTree::CreateTree (TString name, int NtowersOnSide)
   this->ftree     = new TTree (name,name) ;
 
   this->GetTree ()->Branch ("Event",             &this->Event,           "Event/I") ;
-  this->GetTree ()->Branch ("depositedEnergy",   &this->depositedEnergy, "depositedEnergy/D") ;
+  this->GetTree ()->Branch ("depositedEnergy",   &this->depositedEnergy, "depositedEnergy/F") ;
+  this->GetTree ()->Branch ("leakageEnergy",   &this->leakageEnergy, "leakageEnergy/F") ;
   inputMomentum = new std::vector<float> (4, 0.) ; 
   this->GetTree ()->Branch ("inputMomentum",     "std::vector<float>",   &inputMomentum) ;
   inputInitialPosition = new std::vector<float> (3, 0.) ; 
@@ -32,6 +33,8 @@ CreateTree::CreateTree (TString name, int NtowersOnSide)
   this->GetTree ()->Branch ("depositedEnergies", "std::vector<float>",   &depositedEnergies) ;
   totalEnergies = new std::vector<float> (fNtowersOnSideSQ, 0.) ; 
   this->GetTree ()->Branch ("totalEnergies", "std::vector<float>",   &totalEnergies) ;
+  
+  stepDeposits = new TNtuple ("stepDeposits", "stepDeposits", "x:y:z:E") ;
 
   this->Clear () ;  
 }
@@ -56,14 +59,16 @@ int CreateTree::Fill ()
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 
 
+//PG this function is not called!!
 bool CreateTree::Write ()
 {
   TString filename = this->GetName () ;
-  filename+=".root" ;
+  filename += ".root" ;
   TFile* file = new TFile (filename,"RECREATE") ;
   this->GetTree ()->Write () ;
   file->Write () ;
   file->Close () ;
+
   return true ;
 }
 
@@ -75,6 +80,7 @@ void CreateTree::Clear ()
 {
   Event	= 0 ;
   depositedEnergy = 0. ;
+  leakageEnergy = 0. ;
   for (int i = 0 ; i < 4 ; ++i) 
     {
       inputMomentum->at (i) = 0. ;

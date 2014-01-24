@@ -116,17 +116,6 @@ int main(int argc,char** argv)
     cout<<"Starting viz mode..."<<endl; 
   }
   
-  
-  
-  cout<<"\n"<<endl;
-  cout<<"######################################################"<<endl;  
-  cout<<"#                                                    #"<<endl;
-  cout<<"#  GEANT4 simulation of sampling calorimeter         #"<<endl;  
-  cout<<"#         based on LuAG crystal fibers.              #"<<endl;  
-  cout<<"#  Author: Marco Lucchini, CERN, 2013                #"<<endl;
-  cout<<"#                                                    #"<<endl;  
-  cout<<"######################################################"<<endl;
-  cout<<"\n\n"<<endl;
   cout<<"=====>   C O N F I G U R A T I O N   <====\n"<<endl;
   
   G4cout << "Configuration file: '" << argv[1] << "'" << G4endl;
@@ -270,7 +259,8 @@ int main(int argc,char** argv)
   {
     G4cout << "Writing tree to file " << filename << " ..." << G4endl;
     
-    mytree -> GetTree() -> Write();
+    mytree -> GetTree() -> Write() ;
+    mytree->stepDeposits->Write () ;
     outfile -> Close();
   }
   

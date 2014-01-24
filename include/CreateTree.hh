@@ -2,6 +2,8 @@
 #include <vector>
 #include <map>
 
+#include "TNtuple.h"
+#include "TH3F.h"
 #include "TFile.h"
 #include "TTree.h"
 #include "TString.h"
@@ -31,7 +33,9 @@ public:
   int   Event ;
   int fNtowersOnSide ;
   int fNtowersOnSideSQ ;
-  double depositedEnergy ;
+  float depositedEnergy ;
+  // energy deposited in a block after the calorimeter
+  float leakageEnergy ;
   std::vector<float> * inputMomentum ; // Px Py Pz E
   std::vector<float> * inputInitialPosition ; // x, y, z
   // energy deposited in each fibre of a tower,
@@ -42,5 +46,7 @@ public:
   // sorted by position in the square matrix of the detector
   // the (i,j) index in the matrix becomes NjTot * j + i in this vector
   std::vector<float> * totalEnergies ; 
+  
+  TNtuple * stepDeposits ;
 
 } ;

@@ -51,6 +51,7 @@ void SteppingAction::UserSteppingAction (const G4Step * theStep)
   
   G4StepPoint * thePrePoint  = theStep->GetPreStepPoint () ;
   G4StepPoint * thePostPoint = theStep->GetPostStepPoint () ;
+  const G4ThreeVector & PPposition = thePostPoint->GetPosition () ;
   G4VPhysicalVolume * thePrePV  = thePrePoint->GetPhysicalVolume () ;
   G4VPhysicalVolume * thePostPV = thePostPoint->GetPhysicalVolume () ;
   G4String thePrePVName  = "" ; if ( thePrePV )  thePrePVName  = thePrePV  -> GetName () ;
@@ -73,6 +74,14 @@ void SteppingAction::UserSteppingAction (const G4Step * theStep)
       CreateTree::Instance ()->depositedEnergy += energy/GeV ; 
       CreateTree::Instance ()->depositedEnergies->at (index) += energy/GeV ; 
       CreateTree::Instance ()->totalEnergies->at (index) += energy/GeV ; 
+      CreateTree::Instance ()->stepDeposits->Fill (
+//          PPposition.x () - CreateTree::Instance ()->inputInitialPosition->at (0),
+//          PPposition.y () - CreateTree::Instance ()->inputInitialPosition->at (1),
+          PPposition.x (),
+          PPposition.y (),
+          PPposition.z (),
+          energy/GeV
+        ) ; 
      }  
   if (thePostPVName == "AbsorberPV")
     {
@@ -84,6 +93,19 @@ void SteppingAction::UserSteppingAction (const G4Step * theStep)
       assert (index >= 0) ;
       G4double energy = theStep->GetTotalEnergyDeposit () ;
       CreateTree::Instance ()->totalEnergies->at (index) += energy/GeV ; 
+      CreateTree::Instance ()->stepDeposits->Fill (
+//          PPposition.x () - CreateTree::Instance ()->inputInitialPosition->at (0),
+//          PPposition.y () - CreateTree::Instance ()->inputInitialPosition->at (1),
+          PPposition.x (),
+          PPposition.y (),
+          PPposition.z (),
+          energy/GeV
+        ) ; 
+    }
+  if (thePostPVName == "postShowerPV")
+    {
+      G4double energy = theStep->GetTotalEnergyDeposit () ;
+      CreateTree::Instance ()->leakageEnergy += energy/GeV ; 
     }
   return ;  
 }
