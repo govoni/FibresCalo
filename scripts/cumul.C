@@ -15,9 +15,8 @@ TH1D * cumul (TH1D * input_h)
   return output_h ;
 }
 
-double radius (TH1F * input_h)
+double radius (TH1F * input_h, float total = 1.)
 {
-  Double_t total = input_h->Integral () ;
   Double_t cumul = 0. ;
   TAxis * xaxis = input_h->GetXaxis () ;
   for (int i = 1 ; i <= input_h->GetNbinsX () ; ++i)
