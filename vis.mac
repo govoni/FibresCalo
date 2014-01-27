@@ -20,7 +20,7 @@
 
 # Specify zoom value:
 #/vis/viewer/zoomTo 200
-/vis/viewer/zoomTo 50
+/vis/viewer/zoomTo 5
 
 # Specify style (surface or wireframe):
 #/vis/viewer/set/style wireframe

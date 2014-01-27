@@ -12,10 +12,8 @@
 
 /gps/pos/type Plane
 /gps/pos/shape Square
-/gps/pos/halfx 0.1 mm
-/gps/pos/halfy 0.1 mm
-#/gps/pos/halfx 2 mm
-#/gps/pos/halfy 2 mm
+/gps/pos/halfx 1.5 mm
+/gps/pos/halfy 1.5 mm
 
 #/gps/ang/type beam2d
 #/gps/ang/focuspoint 0 0 -1.50 m
@@ -27,4 +25,4 @@
 # /gps/direction 0 0 1
 
 #/tracking/verbose 1
-/run/beamOn 100
+/run/beamOn 50

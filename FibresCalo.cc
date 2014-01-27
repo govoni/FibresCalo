@@ -133,10 +133,10 @@ int main(int argc,char** argv)
   G4cout << "Random seed : " << myseed << G4endl;
   CLHEP::HepRandom::setTheSeed(myseed);
   
-  int NtowersOnSide = config.read<int> ("NtowersOnSide") ;
-  float module_xy = config.read<float> ("module_xy") ;
+  int NfibresOnSide = config.read<int> ("NfibresOnSide") ;
+  float fibres_distance = config.read<float> ("fibres_distance") ;
   float module_z = config.read<float> ("module_z") ;
-  CreateTree* mytree = new CreateTree ("tree", NtowersOnSide, module_xy, module_z) ;
+  CreateTree* mytree = new CreateTree ("tree", NfibresOnSide, fibres_distance, module_z) ;
   
   // User Verbose output class
   //

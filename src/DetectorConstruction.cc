@@ -31,13 +31,25 @@
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 #include "DetectorConstruction.hh"
+#include <algorithm>
 
-
+using namespace std ;
 
 DetectorConstruction::DetectorConstruction (const string& configFileName)
 {
-  readConfigFile (configFileName) ;
+  ConfigFile config (configFileName) ;
   
+  config.readInto (fibres_distance, "fibres_distance") ;
+  config.readInto (module_z, "module_z") ;
+  config.readInto (NfibresOnSide, "NfibresOnSide") ;
+
+  config.readInto (abs_material, "abs_material") ;
+  
+  config.readInto (fiberCore_material, "fiberCore_material") ;
+  config.readInto (fiberCore_radius, "fiberCore_radius") ;
+  config.readInto (fiberClad_material, "fiberClad_material") ;
+  config.readInto (fiberClad_radius, "fiberClad_radius") ;
+  config.readInto (fiber_length, "fiber_length") ;
   
   
   //---------------------------------------
@@ -46,12 +58,13 @@ DetectorConstruction::DetectorConstruction (const string& configFileName)
   
   initializeMaterials () ;
   
-  expHall_x = expHall_y = expHall_z = 1*m ;
-  
-  module_x = module_xy ;
-  module_y = module_xy ;
-  
+  tower_side = (NfibresOnSide - 1) * fibres_distance + 4 * fiberClad_radius ;
   fiber_length = module_z ;
+
+  expHall_x = tower_side * 4 ; 
+  expHall_y = tower_side * 4 ; 
+  expHall_z = module_z * 8 ;
+
 }
 
 
@@ -79,48 +92,67 @@ G4VPhysicalVolume* DetectorConstruction::Construct ()
   G4LogicalVolume * worldLV = new G4LogicalVolume (worldS, MyMaterials::Air (), "World", 0, 0, 0) ;
   G4VPhysicalVolume * worldPV = new G4PVPlacement (0, G4ThreeVector (), worldLV, "World", 0, false, 0, true) ;
 
-  // The block of material after the calorimeter
+  // The embedding absorber, mimicking the rest of material around
+  //   put an embedder four times as the detector in each direction, and fill it with absorber, 
+  //   to quickly stop leaking showers and get an idea of where it would leak laterally
   // ---- ---- ---- ---- ---- ---- ---- ----
-  G4VSolid * postShowerS = new G4Box ("postShowerS", 0.5 * NtowersOnSide * module_xy, 0.5 * NtowersOnSide * module_xy, 0.5 * module_z) ;
-  G4LogicalVolume * postShowerLV = new G4LogicalVolume (postShowerS, AbMaterial, "postShowerLV") ;
-  G4VPhysicalVolume * postShowerPV = new G4PVPlacement (0, G4ThreeVector (0., 0., module_z), postShowerLV, "postShowerPV", worldLV, false, 0, true) ;
-    
+  G4VSolid * embedderS = new G4Box ("embedder", 0.5*expHall_x, 0.5*expHall_y, 0.25*expHall_z) ;
+  G4LogicalVolume * embedderLV = new G4LogicalVolume (embedderS, AbMaterial, "embedder", 0, 0, 0) ;
+  G4VPhysicalVolume * embedderPV = new G4PVPlacement (0, G4ThreeVector (0., 0., 0.25*expHall_z), embedderLV, "embedder", worldLV, false, 0, true) ;
+
   // The calorimeter
   // ---- ---- ---- ---- ---- ---- ---- ----
-  G4VSolid * calorS = new G4Box ("CalorimeterS", 0.5 * NtowersOnSide * module_xy, 0.5 * NtowersOnSide * module_xy, 0.5 * module_z) ;
-  G4LogicalVolume * calorLV = new G4LogicalVolume (calorS, MyMaterials::Air (), "CalorimeterLV") ;
-  G4VPhysicalVolume * calorPV = new G4PVPlacement (0, G4ThreeVector (), calorLV, "CalorimeterPV", worldLV, false, 0, true) ;
-
-  // row of towers, that gets replicated to fill a row
-  // ---- ---- ---- ---- ---- ---- ---- ----
-  G4VSolid * rowS = new G4Box ("rowS", 0.5 * NtowersOnSide * module_xy, 0.5 * module_xy, 0.5 * module_z) ;
-  G4LogicalVolume * rowLV = new G4LogicalVolume (rowS, MyMaterials::Air (), "rowLV") ;
-  G4VPhysicalVolume * matrixPV = new G4PVReplica ("rowPV", rowLV, calorLV, kYAxis, NtowersOnSide, module_xy) ;
-  
-  // single tower, that gets replicated to fill a row
-  // ---- ---- ---- ---- ---- ---- ---- ----
-  G4VSolid * towerS = new G4Box ("towerS", 0.5 * module_xy, 0.5 * module_xy, 0.5 * module_z) ;
-  G4LogicalVolume * towerLV = new G4LogicalVolume (towerS, MyMaterials::Air (), "towerLV") ;
-  G4VPhysicalVolume * rowPV = new G4PVReplica ("towerPV", towerLV, rowLV, kXAxis, NtowersOnSide, module_xy) ;
-   
-  // the absorber
-  G4VSolid * holeS                   = new G4Tubs ("holeS", 0., fiberClad_radius, 0.5 * fiber_length, 0.*deg, 360.*deg) ;
-  G4VSolid * absorberS               = new G4SubtractionSolid ("absorberS", towerS, holeS) ;
-  G4LogicalVolume   * absoLV         = new G4LogicalVolume (absorberS, AbMaterial, "AbsorberLV") ;
-  G4VPhysicalVolume * fAbsorberPV    = new G4PVPlacement (0, G4ThreeVector (0., 0., 0.), absoLV, "AbsorberPV", towerLV, false, 0, true) ;
+  G4VSolid * absorberS = new G4Box ("absorberS", 0.5 * tower_side, 0.5 * tower_side, 0.5 * module_z) ;
+  G4LogicalVolume * absorberLV = new G4LogicalVolume (absorberS, AbMaterial, "absorberLV") ;
+  G4VPhysicalVolume * absorberPV = new G4PVPlacement (0, G4ThreeVector (), absorberLV, "absorberPV", embedderLV, false, 0, true) ;
 
   // the fibres
-  G4VSolid * fiberCladS              = new G4Tubs ("FiberCladS", fiberCore_radius, fiberClad_radius, 0.5*fiber_length, 0.*deg, 360.*deg) ;    
-  G4LogicalVolume * fiberCladLV      = new G4LogicalVolume (fiberCladS   , ClMaterial, "FiberCladLV") ;    
-  G4VPhysicalVolume * fiberCladPV    = new G4PVPlacement (0, G4ThreeVector (0., 0., 0.), fiberCladLV, "FiberCladPV", towerLV, false, 0, true) ;
+  // ---- ---- ---- ---- ---- ---- ---- ----
+  G4VSolid * fiberCladS              = new G4Tubs ("FiberCladS", 0., fiberClad_radius, 0.5*fiber_length, 0.*deg, 360.*deg) ;    
+  G4LogicalVolume * fiberCladLV      = new G4LogicalVolume (fiberCladS, ClMaterial, "FiberCladLV") ;    
 
   G4VSolid * fiberCoreOutS           = new G4Tubs ("FiberCoreOutS", fiberCore_radius * 0.9999, fiberCore_radius, 0.5*fiber_length, 0.*deg, 360.*deg) ;
   G4LogicalVolume * fiberCoreOutLV   = new G4LogicalVolume (fiberCoreOutS, CoMaterial, "FiberCoreOutLV") ;
-  G4VPhysicalVolume * fiberCoreOutPV = new G4PVPlacement (0, G4ThreeVector (0., 0., 0.), fiberCoreOutLV, "FiberCoreOutPV", towerLV, false, 0, true) ;
+  G4VPhysicalVolume * fiberCoreOutPV = new G4PVPlacement (0, G4ThreeVector (0., 0., 0.), fiberCoreOutLV, "FiberCoreOutPV", fiberCladLV, false, 0, true) ;
 
   G4VSolid * fiberCoreInsS           = new G4Tubs ("FiberCoreInsS", 0., fiberCore_radius * 0.9999, 0.5*fiber_length, 0.*deg, 360.*deg) ;
   G4LogicalVolume * fiberCoreInsLV   = new G4LogicalVolume (fiberCoreInsS, CoMaterial, "FiberCoreInsLV") ;
-  G4VPhysicalVolume * fiberCoreInsPV = new G4PVPlacement (0, G4ThreeVector (0., 0., 0.), fiberCoreInsLV, "FiberCoreInsPV", towerLV, false, 0, true) ;
+  G4VPhysicalVolume * fiberCoreInsPV = new G4PVPlacement (0, G4ThreeVector (0., 0., 0.), fiberCoreInsLV, "FiberCoreInsPV", fiberCladLV, false, 0, true) ;
+
+  // triangular-based fibres matrix filling
+  // ---- ---- ---- ---- ---- ---- ---- ----
+
+  int count = 0 ; // for the staggering
+  float margin = max (0.25 * fibres_distance, 2 * fiberClad_radius) ;
+  float startx = 0.5 * (tower_side - 
+                         floor ((tower_side - 2 * margin) / (fibres_distance * 0.8660))
+                            * (fibres_distance * 0.8660)) ;
+  // loop on x direction
+  for (float x = - 0.5 * tower_side + startx ; 
+       x < 1.01 * (0.5 * tower_side - margin) ; 
+       x += fibres_distance * 0.8660)
+    {
+      // loop on y direction 
+      for (float y = - 0.5 * tower_side + margin ; 
+           y < 1.01 * (0.5 * tower_side - margin) ; 
+           y += fibres_distance)
+        {
+          float y_c = y + 0.5 * fibres_distance * (count % 2) ; // fibres staggering
+          if (y_c > 0.5 * tower_side - margin) continue ; 
+          new G4PVPlacement (
+              0,                           // rotation
+              G4ThreeVector (x, y_c, 0.),  // translation
+              fiberCladLV, "FiberCladPV", absorberLV, false, 0, true) ;
+        } // loop on y direction
+      ++count ;   
+    } // loop on x direction
+
+/*
+  find a way to determine the energy deposit position
+
+*/
+
+//  G4VPhysicalVolume * fiberCladPV    = new G4PVPlacement (0, G4ThreeVector (0., 0., 0.), fiberCladLV, "FiberCladPV", absorberLV, false, 0, true) ;
 
 
   //-----------------------------------------------------
@@ -139,25 +171,20 @@ G4VPhysicalVolume* DetectorConstruction::Construct ()
   G4Colour  brass   (0.8, 0.6, 0.4) ;  // brass
   G4Colour  brown   (0.7, 0.4, 0.1) ;  // brown
   
-  G4VisAttributes* VisAttWorld = new G4VisAttributes (white) ;
+  G4VisAttributes* VisAttWorld = new G4VisAttributes (black) ;
   VisAttWorld->SetVisibility (true) ;
   VisAttWorld->SetForceWireframe (true) ;
   worldLV->SetVisAttributes (VisAttWorld) ;
   
-  G4VisAttributes* VisAttCalor = new G4VisAttributes (yellow) ;
-  VisAttCalor->SetVisibility (true) ;
-  VisAttCalor->SetForceWireframe (true) ;
-  calorLV->SetVisAttributes (VisAttCalor) ;
-
-  G4VisAttributes* VisAttPostShower = new G4VisAttributes (yellow) ;
-  VisAttPostShower->SetVisibility (false) ;
-  VisAttPostShower->SetForceWireframe (true) ;
-  postShowerLV->SetVisAttributes (VisAttPostShower) ;
-
+  G4VisAttributes* VisAttEmbedder = new G4VisAttributes (red) ;
+  VisAttEmbedder->SetVisibility (true) ;
+  VisAttEmbedder->SetForceWireframe (true) ;
+  embedderLV->SetVisAttributes (VisAttEmbedder) ;
+  
   G4VisAttributes* VisAttAbsorber = new G4VisAttributes (gray) ;
   VisAttAbsorber->SetVisibility (true) ;
-  VisAttAbsorber->SetForceWireframe (false) ;
-  absoLV->SetVisAttributes (VisAttAbsorber) ;
+  VisAttAbsorber->SetForceWireframe (true) ;
+  absorberLV->SetVisAttributes (VisAttAbsorber) ;
  
   G4VisAttributes* VisAttFiberCore = new G4VisAttributes (green) ;
   VisAttFiberCore->SetVisibility (true) ;
@@ -170,45 +197,13 @@ G4VPhysicalVolume* DetectorConstruction::Construct ()
   VisAttFiberClad->SetForceWireframe (false) ;
   fiberCladLV->SetVisAttributes (VisAttFiberClad) ;  
 
-  G4VisAttributes* VisAttLayer = new G4VisAttributes (blue) ;
-  VisAttLayer->SetVisibility (false) ;
-  VisAttLayer->SetForceWireframe (false) ;
-  towerLV->SetVisAttributes (VisAttLayer) ;
-
-  G4VisAttributes* VisAttRow = new G4VisAttributes (blue) ;
-  VisAttRow->SetVisibility (false) ;
-  VisAttRow->SetForceWireframe (false) ;
-  rowLV->SetVisAttributes (VisAttLayer) ;
-
   G4cout << ">>>>>> DetectorConstruction::Construct ()::end <<< " << G4endl ;
   return worldPV ;
 }
 
 
-
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void DetectorConstruction::readConfigFile (string configFileName)
-{	
-  ConfigFile config (configFileName) ;
-  
-  config.readInto (module_xy, "module_xy") ;
-  config.readInto (module_z, "module_z") ;
-  config.readInto (NtowersOnSide, "NtowersOnSide") ;
-
-  config.readInto (abs_material, "abs_material") ;
-  
-  config.readInto (fiberCore_material, "fiberCore_material") ;
-  config.readInto (fiberCore_radius, "fiberCore_radius") ;
-  config.readInto (fiberClad_material, "fiberClad_material") ;
-  config.readInto (fiberClad_radius, "fiberClad_radius") ;
-  config.readInto (fiber_length, "fiber_length") ;
-  
-}
-
-
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void DetectorConstruction::initializeMaterials ()
 {

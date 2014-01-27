@@ -74,8 +74,6 @@ public:
   DetectorConstruction  (const string& configFileName) ;
   ~DetectorConstruction () ;
   
-  G4double GetModule_x () const { return module_x ; } ;
-  G4double GetModule_y () const { return module_y ; } ;
   G4double GetModule_z () const { return module_z ; } ;
   
   void fillPolygon (std::vector<G4TwoVector>& theBase, const float& side, const float& chamfer) ;
@@ -106,11 +104,12 @@ private:
   G4double  expHall_y ;
   G4double  expHall_z ;
             
-  G4double  module_xy ;
-  G4double  module_x ;
-  G4double  module_y ;
-  G4double  module_z ;
-  G4int     NtowersOnSide ;
+  G4double  fibres_distance ;      // distance between fibres
+  G4double  module_z ;             // length of the detector
+  G4double  tower_side ;           // size of the tower containing fibres
+// FIXME put this in, in future
+//  G4Double  tolerance ;            // minimum distance between fibre and module side
+  G4int     NfibresOnSide ;        // number of fibres in the tower
 
   G4int    abs_material ;
   
@@ -121,8 +120,6 @@ private:
   G4double fiber_length ;
   
   G4double depth ;
-  
-  void readConfigFile (string configFileName) ;
   
   //Materials
   void initializeMaterials () ;
