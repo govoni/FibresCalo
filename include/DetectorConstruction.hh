@@ -105,11 +105,13 @@ private:
   G4double  expHall_z ;
             
   G4double  fibres_distance ;      // distance between fibres
-  G4double  module_z ;             // length of the detector
-  G4double  tower_side ;           // size of the tower containing fibres
+  G4double  module_z ;             // length of the calo tower
+  G4double  tower_side ;           // size of the calo tower containing fibres
 // FIXME put this in, in future
 //  G4Double  tolerance ;            // minimum distance between fibre and module side
-  G4int     NfibresOnSide ;        // number of fibres in the tower
+//  G4int     NfibresOnSide ;        // number of fibres in the tower
+  G4int     NfibresAlongY ;        // number of fibres along the Y side of the calo tower
+  G4double  margin ;               // minimum distance between fibres and tower sides
 
   G4int    abs_material ;
   

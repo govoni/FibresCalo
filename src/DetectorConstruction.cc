@@ -27,13 +27,28 @@
 // $Id: DetectorConstruction.cc, v 1.18 2010-10-23 19:27:38 gum Exp $
 // GEANT4 tag $Name: not supported by cvs2svn $
 //
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+//---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- 
+//---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- 
 
 #include "DetectorConstruction.hh"
 #include <algorithm>
+#include <string>
+#include <sstream>
 
 using namespace std ;
+
+string to_string (int num)
+{
+  string Result;           // string which will contain the result
+  ostringstream convert;   // stream used for the conversion
+  convert << num;          // insert the textual representation of 'Number' in the characters in the stream
+  Result = convert.str (); // set 'Result' to the contents of the stream
+  return Result ;
+}
+
+
+//---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- 
+
 
 DetectorConstruction::DetectorConstruction (const string& configFileName)
 {
@@ -41,7 +56,8 @@ DetectorConstruction::DetectorConstruction (const string& configFileName)
   
   config.readInto (fibres_distance, "fibres_distance") ;
   config.readInto (module_z, "module_z") ;
-  config.readInto (NfibresOnSide, "NfibresOnSide") ;
+//  config.readInto (NfibresOnSide, "NfibresOnSide") ;
+  config.readInto (tower_side, "tower_side") ;
 
   config.readInto (abs_material, "abs_material") ;
   
@@ -58,7 +74,10 @@ DetectorConstruction::DetectorConstruction (const string& configFileName)
   
   initializeMaterials () ;
   
-  tower_side = (NfibresOnSide - 1) * fibres_distance + 4 * fiberClad_radius ;
+//  tower_side = (NfibresOnSide - 1) * fibres_distance + 4 * fiberClad_radius ;
+
+  margin = max (0.25 * fibres_distance, 2 * fiberClad_radius) ;
+  NfibresAlongY = floor ((tower_side - 2 * margin - 0.5 * fibres_distance) / fibres_distance) + 1 ;
   fiber_length = module_z ;
 
   expHall_x = tower_side * 4 ; 
@@ -68,15 +87,15 @@ DetectorConstruction::DetectorConstruction (const string& configFileName)
 }
 
 
+//---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- 
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 DetectorConstruction::~DetectorConstruction ()
 {}
 
 
+//---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- 
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 G4VPhysicalVolume* DetectorConstruction::Construct ()
 {
@@ -87,7 +106,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct ()
   //------------------------------------
   
   // The experimental Hall
-  // ---- ---- ---- ---- ---- ---- ---- ----
+  // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
   G4VSolid * worldS = new G4Box ("World", 0.5*expHall_x, 0.5*expHall_y, 0.5*expHall_z) ;
   G4LogicalVolume * worldLV = new G4LogicalVolume (worldS, MyMaterials::Air (), "World", 0, 0, 0) ;
   G4VPhysicalVolume * worldPV = new G4PVPlacement (0, G4ThreeVector (), worldLV, "World", 0, false, 0, true) ;
@@ -95,19 +114,19 @@ G4VPhysicalVolume* DetectorConstruction::Construct ()
   // The embedding absorber, mimicking the rest of material around
   //   put an embedder four times as the detector in each direction, and fill it with absorber, 
   //   to quickly stop leaking showers and get an idea of where it would leak laterally
-  // ---- ---- ---- ---- ---- ---- ---- ----
+  // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
   G4VSolid * embedderS = new G4Box ("embedder", 0.5*expHall_x, 0.5*expHall_y, 0.25*expHall_z) ;
   G4LogicalVolume * embedderLV = new G4LogicalVolume (embedderS, AbMaterial, "embedder", 0, 0, 0) ;
   G4VPhysicalVolume * embedderPV = new G4PVPlacement (0, G4ThreeVector (0., 0., 0.25*expHall_z), embedderLV, "embedder", worldLV, false, 0, true) ;
 
   // The calorimeter
-  // ---- ---- ---- ---- ---- ---- ---- ----
+  // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
   G4VSolid * absorberS = new G4Box ("absorberS", 0.5 * tower_side, 0.5 * tower_side, 0.5 * module_z) ;
   G4LogicalVolume * absorberLV = new G4LogicalVolume (absorberS, AbMaterial, "absorberLV") ;
   G4VPhysicalVolume * absorberPV = new G4PVPlacement (0, G4ThreeVector (), absorberLV, "absorberPV", embedderLV, false, 0, true) ;
 
   // the fibres
-  // ---- ---- ---- ---- ---- ---- ---- ----
+  // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
   G4VSolid * fiberCladS              = new G4Tubs ("FiberCladS", 0., fiberClad_radius, 0.5*fiber_length, 0.*deg, 360.*deg) ;    
   G4LogicalVolume * fiberCladLV      = new G4LogicalVolume (fiberCladS, ClMaterial, "FiberCladLV") ;    
 
@@ -120,31 +139,33 @@ G4VPhysicalVolume* DetectorConstruction::Construct ()
   G4VPhysicalVolume * fiberCoreInsPV = new G4PVPlacement (0, G4ThreeVector (0., 0., 0.), fiberCoreInsLV, "FiberCoreInsPV", fiberCladLV, false, 0, true) ;
 
   // triangular-based fibres matrix filling
-  // ---- ---- ---- ---- ---- ---- ---- ----
+  // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 
-  int count = 0 ; // for the staggering
-  float margin = max (0.25 * fibres_distance, 2 * fiberClad_radius) ;
-  float startx = 0.5 * (tower_side - 
+  int count_x = 0 ; // for the staggering
+  float start_x = 0.5 * (tower_side - 
                          floor ((tower_side - 2 * margin) / (fibres_distance * 0.8660))
                             * (fibres_distance * 0.8660)) ;
+  float start_y = 0.5 * (tower_side - fibres_distance * (NfibresAlongY - 0.5)) ;
   // loop on x direction
-  for (float x = - 0.5 * tower_side + startx ; 
+  for (float x = - 0.5 * tower_side + start_x ; 
        x < 1.01 * (0.5 * tower_side - margin) ; 
        x += fibres_distance * 0.8660)
     {
       // loop on y direction 
-      for (float y = - 0.5 * tower_side + margin ; 
-           y < 1.01 * (0.5 * tower_side - margin) ; 
+      int count_y = 0 ; // for the staggering
+      for (float y = - 0.5 * tower_side + start_y ; 
+           count_y < NfibresAlongY ; 
            y += fibres_distance)
         {
-          float y_c = y + 0.5 * fibres_distance * (count % 2) ; // fibres staggering
-          if (y_c > 0.5 * tower_side - margin) continue ; 
+          float y_c = y + 0.5 * fibres_distance * (count_x % 2) ; // fibres staggering
+          string name = "FiberCladPV_" + to_string (count_x * NfibresAlongY + count_y) ;
           new G4PVPlacement (
               0,                           // rotation
               G4ThreeVector (x, y_c, 0.),  // translation
-              fiberCladLV, "FiberCladPV", absorberLV, false, 0, true) ;
+              fiberCladLV, name, absorberLV, false, 0, true) ;
+          ++count_y ;
         } // loop on y direction
-      ++count ;   
+      ++count_x ;   
     } // loop on x direction
 
 /*
@@ -202,7 +223,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct ()
 }
 
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+//---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- 
 
 
 void DetectorConstruction::initializeMaterials ()
@@ -247,7 +268,7 @@ void DetectorConstruction::initializeMaterials ()
 }
 
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+//---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- 
 
 
 void DetectorConstruction::fillPolygon (std::vector<G4TwoVector>& theBase, const float& side, const float& chamfer)
@@ -266,7 +287,7 @@ void DetectorConstruction::fillPolygon (std::vector<G4TwoVector>& theBase, const
 }
 
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+//---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- 
 
 
 void DetectorConstruction::fillHexagon (std::vector<G4TwoVector>& hexagon, const float& radius)
@@ -281,7 +302,7 @@ void DetectorConstruction::fillHexagon (std::vector<G4TwoVector>& hexagon, const
   }
 
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+//---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- 
 
 
 void DetectorConstruction::fillSquare (std::vector<G4TwoVector>& square, const float& halfSide)
