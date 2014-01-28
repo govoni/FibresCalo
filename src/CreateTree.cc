@@ -1,4 +1,5 @@
 #include "CreateTree.hh"
+#include <algorithm>
 
 using namespace std ;
 
@@ -8,38 +9,37 @@ CreateTree* CreateTree::fInstance = NULL ;
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 
 
-CreateTree::CreateTree (TString name, int NtowersOnSide, float module_xy, float module_z)
+CreateTree::CreateTree (TString name, float tower_side)
 {
   if ( fInstance )
   {
     return ;
   }
 
-  std::cout << "CONSTRUCTING CreateTree with " << NtowersOnSide << " elements per side\n" ;   
-  this->fNtowersOnSide = NtowersOnSide ;
-  this->fNtowersOnSideSQ = NtowersOnSide * NtowersOnSide ;
   this->fInstance = this ;
   this->fname     = name ;
   this->ftree     = new TTree (name,name) ;
 
   this->GetTree ()->Branch ("Event",             &this->Event,           "Event/I") ;
   this->GetTree ()->Branch ("depositedEnergy",   &this->depositedEnergy, "depositedEnergy/F") ;
-  this->GetTree ()->Branch ("leakageEnergy",   &this->leakageEnergy, "leakageEnergy/F") ;
-  inputMomentum = new std::vector<float> (4, 0.) ; 
-  this->GetTree ()->Branch ("inputMomentum",     "std::vector<float>",   &inputMomentum) ;
-  inputInitialPosition = new std::vector<float> (3, 0.) ; 
-  this->GetTree ()->Branch ("inputInitialPosition",     "std::vector<float>",   &inputInitialPosition) ;
-  depositedEnergies = new std::vector<float> (fNtowersOnSideSQ, 0.) ; 
-  this->GetTree ()->Branch ("depositedEnergies", "std::vector<float>",   &depositedEnergies) ;
-  totalEnergies = new std::vector<float> (fNtowersOnSideSQ, 0.) ; 
-  this->GetTree ()->Branch ("totalEnergies", "std::vector<float>",   &totalEnergies) ;
+  this->GetTree ()->Branch ("leakageEnergy",     &this->leakageEnergy,   "leakageEnergy/F") ;
+  inputMomentum = new vector<float> (4, 0.) ; 
+  this->GetTree ()->Branch ("inputMomentum",     "vector<float>",   &inputMomentum) ;
+  inputInitialPosition = new vector<float> (3, 0.) ; 
+  this->GetTree ()->Branch ("inputInitialPosition",     "vector<float>",   &inputInitialPosition) ;
+  depositedEnergies = new vector<float> () ; 
+  this->GetTree ()->Branch ("depositedEnergies", "vector<float>",   &depositedEnergies) ;
+  depositFibres = new vector<int> () ; 
+  this->GetTree ()->Branch ("depositFibres", "vector<int>",   &depositFibres) ;
   
-  stepDeposits = new TNtuple ("stepDeposits", "stepDeposits", "x:y:z:E") ;
-  float side = NtowersOnSide * module_xy ;
+  float side = 4 * tower_side ;
   float precision = 0.1 ; // mm
   leakeage = new TH2F ("leakeage", "leakeage", 
                        int (side / precision), -1 * side, side, 
                        int (side / precision), -1 * side, side) ;
+
+  fibresPosition = new TNtuple ("fibresPosition", "fibresPosition", "N:x:y") ;
+
   this->Clear () ;  
 }
 
@@ -54,6 +54,28 @@ CreateTree::~CreateTree ()
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 
 
+void
+CreateTree::AddEnergyDeposit (int index, float deposit)
+{
+  // find if it exists already
+  vector<int>::const_iterator where = find (depositFibres->begin (), 
+                                            depositFibres->end (), index) ;
+  if (depositFibres->end () == where) 
+    {
+      depositFibres->push_back (index) ;
+      depositedEnergies->push_back (deposit) ;
+    }   
+  else
+    {
+      depositedEnergies->at (where - depositFibres->begin ()) += deposit ;    
+    }
+  return ;
+}
+
+
+// ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+
+
 int CreateTree::Fill () 
 { 
   return this->GetTree ()->Fill () ; 
@@ -63,16 +85,12 @@ int CreateTree::Fill ()
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 
 
-//PG this function is not called!!
-bool CreateTree::Write ()
+bool CreateTree::Write (TFile * outfile)
 {
-  TString filename = this->GetName () ;
-  filename += ".root" ;
-  TFile* file = new TFile (filename,"RECREATE") ;
-  this->GetTree ()->Write () ;
-  file->Write () ;
-  file->Close () ;
-
+  outfile->cd () ;
+  ftree->Write () ;
+  fibresPosition->Write () ;
+  leakeage->Write () ;
   return true ;
 }
 
@@ -93,9 +111,6 @@ void CreateTree::Clear ()
     {
       inputInitialPosition->at (i) = 0. ;
     }
-  for (int i = 0 ; i < fNtowersOnSideSQ ; ++i) 
-    {
-      depositedEnergies->at (i) = 0. ;
-      totalEnergies->at (i) = 0. ;
-    }
+  depositedEnergies->clear () ;
+  depositFibres->clear () ;
 }

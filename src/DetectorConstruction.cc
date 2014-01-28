@@ -31,6 +31,7 @@
 //---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- 
 
 #include "DetectorConstruction.hh"
+#include "CreateTree.hh"
 #include <algorithm>
 #include <string>
 #include <sstream>
@@ -116,8 +117,8 @@ G4VPhysicalVolume* DetectorConstruction::Construct ()
   //   to quickly stop leaking showers and get an idea of where it would leak laterally
   // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
   G4VSolid * embedderS = new G4Box ("embedder", 0.5*expHall_x, 0.5*expHall_y, 0.25*expHall_z) ;
-  G4LogicalVolume * embedderLV = new G4LogicalVolume (embedderS, AbMaterial, "embedder", 0, 0, 0) ;
-  G4VPhysicalVolume * embedderPV = new G4PVPlacement (0, G4ThreeVector (0., 0., 0.25*expHall_z), embedderLV, "embedder", worldLV, false, 0, true) ;
+  G4LogicalVolume * embedderLV = new G4LogicalVolume (embedderS, AbMaterial, "embedderLV", 0, 0, 0) ;
+  G4VPhysicalVolume * embedderPV = new G4PVPlacement (0, G4ThreeVector (0., 0., 0.25*expHall_z), embedderLV, "embedderPV", worldLV, false, 0, true) ;
 
   // The calorimeter
   // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
@@ -130,6 +131,9 @@ G4VPhysicalVolume* DetectorConstruction::Construct ()
   G4VSolid * fiberCladS              = new G4Tubs ("FiberCladS", 0., fiberClad_radius, 0.5*fiber_length, 0.*deg, 360.*deg) ;    
   G4LogicalVolume * fiberCladLV      = new G4LogicalVolume (fiberCladS, ClMaterial, "FiberCladLV") ;    
 
+/*
+// removed for the time being, as not sure how to get the energy deposit of each of them
+
   G4VSolid * fiberCoreOutS           = new G4Tubs ("FiberCoreOutS", fiberCore_radius * 0.9999, fiberCore_radius, 0.5*fiber_length, 0.*deg, 360.*deg) ;
   G4LogicalVolume * fiberCoreOutLV   = new G4LogicalVolume (fiberCoreOutS, CoMaterial, "FiberCoreOutLV") ;
   G4VPhysicalVolume * fiberCoreOutPV = new G4PVPlacement (0, G4ThreeVector (0., 0., 0.), fiberCoreOutLV, "FiberCoreOutPV", fiberCladLV, false, 0, true) ;
@@ -137,6 +141,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct ()
   G4VSolid * fiberCoreInsS           = new G4Tubs ("FiberCoreInsS", 0., fiberCore_radius * 0.9999, 0.5*fiber_length, 0.*deg, 360.*deg) ;
   G4LogicalVolume * fiberCoreInsLV   = new G4LogicalVolume (fiberCoreInsS, CoMaterial, "FiberCoreInsLV") ;
   G4VPhysicalVolume * fiberCoreInsPV = new G4PVPlacement (0, G4ThreeVector (0., 0., 0.), fiberCoreInsLV, "FiberCoreInsPV", fiberCladLV, false, 0, true) ;
+*/
 
   // triangular-based fibres matrix filling
   // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
@@ -158,7 +163,9 @@ G4VPhysicalVolume* DetectorConstruction::Construct ()
            y += fibres_distance)
         {
           float y_c = y + 0.5 * fibres_distance * (count_x % 2) ; // fibres staggering
-          string name = "FiberCladPV_" + to_string (count_x * NfibresAlongY + count_y) ;
+          int index = count_x * NfibresAlongY + count_y ;
+          CreateTree::Instance ()->fibresPosition->Fill (index, x, y_c) ;
+          string name = "FiberCladPV " + to_string (index) ;
           new G4PVPlacement (
               0,                           // rotation
               G4ThreeVector (x, y_c, 0.),  // translation
@@ -172,9 +179,6 @@ G4VPhysicalVolume* DetectorConstruction::Construct ()
   find a way to determine the energy deposit position
 
 */
-
-//  G4VPhysicalVolume * fiberCladPV    = new G4PVPlacement (0, G4ThreeVector (0., 0., 0.), fiberCladLV, "FiberCladPV", absorberLV, false, 0, true) ;
-
 
   //-----------------------------------------------------
   //------------- Visualization attributes --------------
@@ -207,11 +211,13 @@ G4VPhysicalVolume* DetectorConstruction::Construct ()
   VisAttAbsorber->SetForceWireframe (true) ;
   absorberLV->SetVisAttributes (VisAttAbsorber) ;
  
+/*
   G4VisAttributes* VisAttFiberCore = new G4VisAttributes (green) ;
   VisAttFiberCore->SetVisibility (true) ;
   VisAttFiberCore->SetForceWireframe (false) ;
   fiberCoreInsLV->SetVisAttributes (VisAttFiberCore) ;  
   fiberCoreOutLV->SetVisAttributes (VisAttFiberCore) ;  
+*/
  
   G4VisAttributes* VisAttFiberClad = new G4VisAttributes (cyan) ;
   VisAttFiberClad->SetVisibility (true) ;

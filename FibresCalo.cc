@@ -133,10 +133,8 @@ int main(int argc,char** argv)
   G4cout << "Random seed : " << myseed << G4endl;
   CLHEP::HepRandom::setTheSeed(myseed);
   
-//  int NfibresOnSide = config.read<int> ("NfibresOnSide") ;
-  float fibres_distance = config.read<float> ("fibres_distance") ;
-  float module_z = config.read<float> ("module_z") ;
-  CreateTree* mytree = new CreateTree ("tree", 5 /*DUMMY*/, fibres_distance, module_z) ;
+  float tower_side = config.read<float> ("tower_side") ;
+  CreateTree* mytree = new CreateTree ("tree", tower_side) ;
   
   // User Verbose output class
   //
@@ -260,11 +258,8 @@ int main(int argc,char** argv)
   if(argc == 3) 
   {
     G4cout << "Writing tree to file " << filename << " ..." << G4endl;
-    
-    mytree -> GetTree() -> Write() ;
-    mytree->stepDeposits->Write () ;
-    mytree->leakeage->Write () ;
-    outfile -> Close();
+    mytree->Write (outfile) ;
+    outfile->Close () ;
   }
   
   return 0;

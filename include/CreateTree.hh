@@ -20,13 +20,14 @@ private:
   
 public:
   
-  CreateTree (TString name, int NtowersOnSide, float module_xy, float module_z) ;
+  CreateTree (TString name, float tower_side) ;
   ~CreateTree () ;
   
   TTree*             GetTree  () const { return ftree ; } ;
   TString            GetName  () const { return fname ; } ;
+  void               AddEnergyDeposit (int index, float deposit) ;
   int                Fill     () ;
-  bool               Write    () ;
+  bool               Write    (TFile *) ;
   void               Clear    () ;
   static CreateTree* Instance () { return fInstance ; } ;
   static CreateTree* fInstance ;
@@ -39,16 +40,16 @@ public:
   float leakageEnergy ;
   std::vector<float> * inputMomentum ; // Px Py Pz E
   std::vector<float> * inputInitialPosition ; // x, y, z
-  // energy deposited in each fibre of a tower,
-  // sorted by position in the square matrix of the detector
-  // the (i,j) index in the matrix becomes NjTot * j + i in this vector
+  // energy deposited in each fibre of a tower
   std::vector<float> * depositedEnergies ;
-  // energy deposited in each tower (absorber + fibre),
-  // sorted by position in the square matrix of the detector
-  // the (i,j) index in the matrix becomes NjTot * j + i in this vector
-  std::vector<float> * totalEnergies ; 
+  // index of the fibre where the deposit happens
+  // from the PV name
+  std::vector<int> * depositFibres ; 
   
-  TNtuple * stepDeposits ;
   TH2F * leakeage ;
+
+  // to be filled at the beginning of the event generation only
+  TNtuple * fibresPosition ; 
+
 
 } ;

@@ -30,6 +30,21 @@
 
 using namespace std ;
 
+
+int to_int (string name)
+{
+  int Result ;             // int which will contain the result
+  stringstream convert (name) ;
+  string dummy ;           
+  convert >> dummy ;       
+  convert >> Result ;
+  return Result ;
+}
+
+
+//---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- 
+
+
 SteppingAction::SteppingAction ()
 {}
 
@@ -58,61 +73,19 @@ void SteppingAction::UserSteppingAction (const G4Step * theStep)
   G4String thePostPVName = "" ; if ( thePostPV ) thePostPVName = thePostPV -> GetName () ;
   G4double energy = theStep->GetTotalEnergyDeposit () ;
 
-/*
-  // this is the volume where energy has been deposited
-  if (thePostPVName == "FiberCladPV" ||
-      thePostPVName == "FiberCoreOutPV" ||
-      thePostPVName == "FiberCoreInsPV")
+  // FIXME put a zero-suppression threshold
+  if (0. == energy/GeV) return ;
+  
+  if (thePrePVName.contains ("Fiber"))
     {
-      int index = thePostPoint->GetTouchable ()->GetReplicaNumber (1) 
-                   * CreateTree::Instance ()->fNtowersOnSide +
-                  thePostPoint->GetTouchable ()->GetReplicaNumber (2) ;
-
-      assert (index < CreateTree::Instance ()->fNtowersOnSideSQ) ;
-      assert (index >= 0) ;
-      
-      // get the deposited energy
-      CreateTree::Instance ()->depositedEnergy += energy/GeV ; 
-      CreateTree::Instance ()->depositedEnergies->at (index) += energy/GeV ; 
-      CreateTree::Instance ()->totalEnergies->at (index) += energy/GeV ; 
-      CreateTree::Instance ()->stepDeposits->Fill (
-          PPposition.x () - CreateTree::Instance ()->inputInitialPosition->at (0),
-          PPposition.y () - CreateTree::Instance ()->inputInitialPosition->at (1),
-//          PPposition.x (),
-//          PPposition.y (),
-          PPposition.z (),
-          energy/GeV
-        ) ; 
-     }  
-  else if (thePostPVName == "AbsorberPV")
-    {
-      int index = thePostPoint->GetTouchable ()->GetReplicaNumber (1) 
-                   * CreateTree::Instance ()->fNtowersOnSide +
-                  thePostPoint->GetTouchable ()->GetReplicaNumber (2) ;
-
-      assert (index < CreateTree::Instance ()->fNtowersOnSideSQ) ;
-      assert (index >= 0) ;
-      CreateTree::Instance ()->totalEnergies->at (index) += energy/GeV ; 
-      CreateTree::Instance ()->stepDeposits->Fill (
-          PPposition.x () - CreateTree::Instance ()->inputInitialPosition->at (0),
-          PPposition.y () - CreateTree::Instance ()->inputInitialPosition->at (1),
-//          PPposition.x (),
-//          PPposition.y (),
-          PPposition.z (),
-          energy/GeV
-        ) ; 
+      string fiberName (thePrePVName.data ()) ;
+      int index = to_int (fiberName) ;
+      CreateTree::Instance ()->AddEnergyDeposit (index, energy/GeV) ;
     }
-  else if (thePostPVName == "postShowerPV")
-    {
-      CreateTree::Instance ()->leakageEnergy += energy/GeV ; 
-      CreateTree::Instance ()->leakeage->Fill (
-            PPposition.x (), PPposition.y (), energy/GeV) ;
-    }
-  else 
+  else if (thePrePVName == "embedderPV")
     {
       CreateTree::Instance ()->leakeage->Fill (
             PPposition.x (), PPposition.y (), energy/GeV) ;
     }  
-*/
   return ;  
 }
