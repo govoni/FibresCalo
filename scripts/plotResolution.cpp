@@ -136,6 +136,7 @@ int main (int argc, char ** argv)
   // distributions for the energy response and calibration
   // .... .... .... .... .... .... ....  
   
+  TH1F h_Egen ("h_Egen", "Egen", 200, 0, 200) ;
   TH1F h_ErecoOverEgen ("h_ErecoOverEgen", "ErecoOverEgen", 400, 0, 0.2) ;
   TH2F h_ErecoOverEgen_vs_Ebeam ("h_ErecoOverEgen_vs_Ebeam", "h_ErecoOverEgen_vs_Ebeam", 
                         45, 5, 50, 200, 0, 0.002) ;
@@ -188,6 +189,7 @@ int main (int argc, char ** argv)
        } // loop on the towers composing the calorimeter
        
       float beamEnergy = inputMomentum->at (3) ;
+      h_Egen->Fill (beamEnergy) ;
       float ErecoOverEgen = observedEnergy / beamEnergy ;
       h_ErecoOverEgen.Fill (ErecoOverEgen) ;
       h_ErecoOverEgen_vs_Ebeam.Fill (beamEnergy, ErecoOverEgen) ;
@@ -202,6 +204,7 @@ int main (int argc, char ** argv)
   TString outputFileName = "out_" + inputFileName ;
   TFile outfile (outputFileName, "recreate") ;
   outfile.cd () ;
+  h_Egen->Write () ;
   h_ErecoOverEgen.Write () ;
   h_ErecoOverEgen_vs_Ebeam.Write () ;
   h_ErecoOverEgen_vs_impact.Write () ;
