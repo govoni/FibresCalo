@@ -137,21 +137,11 @@ int main (int argc, char ** argv)
   // .... .... .... .... .... .... ....  
   
   TH1F h_Egen ("h_Egen", "Egen", 200, 0, 200) ;
-  TH1F h_ErecoOverEgen ("h_ErecoOverEgen", "ErecoOverEgen", 400, 0, 0.2) ;
+  TH1F h_ErecoOverEgen ("h_ErecoOverEgen", "ErecoOverEgen", 400, 0, 0.1) ;
   TH2F h_ErecoOverEgen_vs_Ebeam ("h_ErecoOverEgen_vs_Ebeam", "h_ErecoOverEgen_vs_Ebeam", 
-                        45, 5, 50, 200, 0, 0.002) ;
+                        45, 5, 50, 200, 0, 0.1) ;
   TH3F h_ErecoOverEgen_vs_impact ("h_ErecoOverEgen_vs_impact", "h_ErecoOverEgen_vs_impact", 
-                        40, -2., 2., 40, -2., 2., 400, 0, 0.2) ;
-
-  // distributions for the energy containment
-  // .... .... .... .... .... .... ....  
-
-  // total deposited energy in the calorimeter, with the poissonian smearing
-  TH1F h_EdepOverEgen ("h_EdepOverEgen", "EdepOverEgen", 100, 0, 1) ;
-  TH2F h_EdepOverEgen_vs_Ebeam ("h_EdepOverEgen_vs_Ebeam", "h_EdepOverEgen_vs_Ebeam", 
-                       45, 5, 50, 100, 0, 1) ;
-  TH3F h_EdepOverEgen_vs_impact ("h_EdepOverEgen_vs_impact", "h_EdepOverEgen_vs_impact", 
-                       40, -2., 2., 40, -2., 2., 400, 0, 0.002) ;
+                        40, -2., 2., 40, -2., 2., 400, 0, 0.1) ;
 
   // distributions for the energy resolution
   // .... .... .... .... .... .... ....  
