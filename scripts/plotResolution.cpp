@@ -75,7 +75,7 @@ int main (int argc, char ** argv)
   // init tree and basic vars
   // ---- ---- ---- ---- ---- ---- ----
 
-  gROOT->ProcessLine("#include <vector>") ; 
+  gROOT->ProcessLine ("#include <vector>") ; 
 
   if (argc < 2)
     {
@@ -90,7 +90,7 @@ int main (int argc, char ** argv)
   if (argc == 3)
     calibration = atof (argv[2]) ; // from response to total deposited energy
 
-  cout << "running on  : " << inputFileName << endl ;
+  cout << "running on  : " << argv[1] << endl ;
   cout << "calibration : " << calibration << endl ;
   
   float LY = 10000000 ; // photons per GeV 
@@ -189,7 +189,7 @@ int main (int argc, char ** argv)
        } // loop on the towers composing the calorimeter
        
       float beamEnergy = inputMomentum->at (3) ;
-      h_Egen->Fill (beamEnergy) ;
+      h_Egen.Fill (beamEnergy) ;
       float ErecoOverEgen = observedEnergy / beamEnergy ;
       h_ErecoOverEgen.Fill (ErecoOverEgen) ;
       h_ErecoOverEgen_vs_Ebeam.Fill (beamEnergy, ErecoOverEgen) ;
@@ -204,7 +204,7 @@ int main (int argc, char ** argv)
   TString outputFileName = "out_" + inputFileName ;
   TFile outfile (outputFileName, "recreate") ;
   outfile.cd () ;
-  h_Egen->Write () ;
+  h_Egen.Write () ;
   h_ErecoOverEgen.Write () ;
   h_ErecoOverEgen_vs_Ebeam.Write () ;
   h_ErecoOverEgen_vs_impact.Write () ;
