@@ -5,6 +5,7 @@
 
 #include <iostream>
 #include <vector>
+#include <algorithm>
 #include <map>
 #include <string>
 #include <cmath>
@@ -18,6 +19,7 @@
 #include "TCanvas.h"
 #include "TLegend.h"
 #include "TRandom.h"
+#include "TF1.h"
 #include "TH1.h"
 #include "TH2.h"
 #include "TH3.h"
@@ -86,7 +88,7 @@ int main (int argc, char ** argv)
   
   TString inputFileName = argv[1] ;
 
-  float calibration = 1. ; // from response to total deposited energy
+  float calibration = -1. ; // from response to total deposited energy
   if (argc == 3)
     calibration = atof (argv[2]) ; // from response to total deposited energy
 
@@ -115,6 +117,9 @@ int main (int argc, char ** argv)
     }
 
   TTree * tree = (TTree *) inputFile->Get ("tree") ;
+  Int_t nentries = tree->GetEntries () ;
+  cout << "found " << nentries << " events\n" ;
+
   
   // prepare input variables
   // ---- ---- ---- ---- ---- ---- ----
@@ -130,6 +135,36 @@ int main (int argc, char ** argv)
   std::vector<float> * inputInitialPosition = new std::vector<float> (3) ; 
   tree->SetBranchAddress ("inputInitialPosition", &inputInitialPosition) ;
 
+  // get the energy calibration value
+  // ---- ---- ---- ---- ---- ---- ----  
+
+  vector<float> calibVect ;
+
+  // loop over entries, for calibration
+  for (Int_t iEntry = 0 ; iEntry < min (1000, nentries) ; ++iEntry) 
+	{
+	  tree->GetEvent (iEntry) ;
+      float observedEnergy = 0. ;
+      // loop on the towers composing the calorimeter
+	  for (int j = 0 ; j < depositedEnergies->size () ; ++j)
+	   {
+		 observedEnergy += depositedEnergies->at (j) ;
+	   } // loop on the towers composing the calorimeter
+   
+	  float beamEnergy = inputMomentum->at (3) ;
+	  float ErecoOverEgen = observedEnergy / beamEnergy ;
+	  calibVect.push_back (ErecoOverEgen) ;
+	} // loop over entries, for calibration
+
+  float h_min = *(min_element (calibVect.begin (), calibVect.end ())) * 0.7 ;
+  float h_max = *(max_element (calibVect.begin (), calibVect.end ())) * 1.3 ;
+  TH1F h_ErecoOverEgen_calib ("h_ErecoOverEgen_calib", "h_ErecoOverEgen_calib", 
+							  100, h_min, h_max) ;
+  for (int i = 0 ; i < calibVect.size () ; ++i) 
+    h_ErecoOverEgen_calib.Fill (calibVect.at (i)) ;
+  h_ErecoOverEgen_calib.Fit ("gaus", "Q") ;
+  calibration = 1. / h_ErecoOverEgen_calib.GetFunction ("gaus")->GetParameter (1) ;
+
   // output histograms
   // ---- ---- ---- ---- ---- ---- ----  
   
@@ -137,11 +172,11 @@ int main (int argc, char ** argv)
   // .... .... .... .... .... .... ....  
   
   TH1F h_Egen ("h_Egen", "Egen", 200, 0, 200) ;
-  TH1F h_ErecoOverEgen ("h_ErecoOverEgen", "ErecoOverEgen", 400, 0, 0.1) ;
+  TH1F h_ErecoOverEgen ("h_ErecoOverEgen", "ErecoOverEgen", 100, h_min, h_max) ;
   TH2F h_ErecoOverEgen_vs_Ebeam ("h_ErecoOverEgen_vs_Ebeam", "h_ErecoOverEgen_vs_Ebeam", 
-                        45, 5, 50, 200, 0, 0.1) ;
+                        45, 5, 50, 100, h_min, h_max) ;
   TH3F h_ErecoOverEgen_vs_impact ("h_ErecoOverEgen_vs_impact", "h_ErecoOverEgen_vs_impact", 
-                        40, -2., 2., 40, -2., 2., 400, 0, 0.1) ;
+                        40, -2., 2., 40, -2., 2., 100, h_min, h_max) ;
 
   // distributions for the energy resolution
   // .... .... .... .... .... .... ....  
@@ -151,15 +186,15 @@ int main (int argc, char ** argv)
   TH2F h_sigmaEoverE_vs_Ebeam ("sigmaEoverE_vs_Ebeam", "sigmaEoverE_vs_Ebeam", 
                       45, 5, 50, 100, -1., 1.) ;
 
+
+
   // events analysis
   // ---- ---- ---- ---- ---- ---- ----  
-
-  Int_t nentries = tree->GetEntries () ;
-  cout << "found " << nentries << " events\n" ;
 
   float x = 0. ; 
   float y = 0. ;
 
+  // loop over entries
   for (Int_t iEntry = 0 ; iEntry < nentries ; ++iEntry) 
     {
       if (iEntry % 100 == 0) 
@@ -194,6 +229,7 @@ int main (int argc, char ** argv)
   TString outputFileName = "out_" + inputFileName ;
   TFile outfile (outputFileName, "recreate") ;
   outfile.cd () ;
+  h_ErecoOverEgen_calib.Write () ;
   h_Egen.Write () ;
   h_ErecoOverEgen.Write () ;
   h_ErecoOverEgen_vs_Ebeam.Write () ;
