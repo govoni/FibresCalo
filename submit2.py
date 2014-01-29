@@ -19,7 +19,7 @@ def prepareJob (jobID, outputFolder):
     f.write ('cd ' + workingFolder + '\n')
     f.write ('source setup_lxplus.sh\n')
     f.write ('cd -\n')
-    f.write ('cp' + workingFolder + '/config.cfg ./\n')
+    f.write ('cp ' + workingFolder + '/config.cfg ./\n')
     f.write ('cp ' + workingFolder + '/gps.mac ./\n')
     f.write ('/afs/cern.ch/user/g/govoni/geant4_workdir/bin/Linux-g++/FibresCalo config.cfg ' + filename + '\n')
     f.write (workingFolder + '/plotResolution ' + filename + '.root\n')
@@ -27,7 +27,7 @@ def prepareJob (jobID, outputFolder):
     f.write ('cmsStage out_' + filename + '.root /store/user/govoni/upgrade/' + outputFolder + '\n')
     f.close ()
     getstatusoutput ('chmod 755 job_' + jobID)
-#    getstatusoutput ('bsub -q 8nh job_' + jobID)
+    getstatusoutput ('bsub -q 8nh job_' + jobID)
 
 
 # ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
