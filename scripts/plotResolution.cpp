@@ -10,6 +10,7 @@
 #include <cmath>
 #include <cstdlib>
 
+#include "TROOT.h"
 #include "TFile.h"
 #include "TTree.h"
 #include "TNtuple.h"
@@ -73,6 +74,8 @@ int main (int argc, char ** argv)
 //  TString inputFile
   // init tree and basic vars
   // ---- ---- ---- ---- ---- ---- ----
+
+  gROOT->ProcessLine("#include <vector>") ; 
 
   if (argc < 2)
     {
