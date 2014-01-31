@@ -68,6 +68,8 @@ DetectorConstruction::DetectorConstruction (const string& configFileName)
   config.readInto (fiberClad_radius, "fiberClad_radius") ;
   config.readInto (fiber_length, "fiber_length") ;
   
+  config.readInto (B_field_intensity, "B_field_intensity") ;
+  
   
   //---------------------------------------
   //------------- Parameters --------------
@@ -84,6 +86,8 @@ DetectorConstruction::DetectorConstruction (const string& configFileName)
   expHall_x = tower_side * 4 ; 
   expHall_y = tower_side * 4 ; 
   expHall_z = module_z * 8 ;
+  
+  B_field_IsInitialized = false ;
 
 }
 
@@ -175,11 +179,6 @@ G4VPhysicalVolume* DetectorConstruction::Construct ()
       ++count_x ;   
     } // loop on x direction
 
-/*
-  find a way to determine the energy deposit position
-
-*/
-
   //-----------------------------------------------------
   //------------- Visualization attributes --------------
   //-----------------------------------------------------
@@ -223,6 +222,9 @@ G4VPhysicalVolume* DetectorConstruction::Construct ()
   VisAttFiberClad->SetVisibility (true) ;
   VisAttFiberClad->SetForceWireframe (false) ;
   fiberCladLV->SetVisAttributes (VisAttFiberClad) ;  
+
+  //PG call the magnetic field initialisation
+  if (B_field_intensity * tesla > 0.1) ConstructField () ; 
 
   G4cout << ">>>>>> DetectorConstruction::Construct ()::end <<< " << G4endl ;
   return worldPV ;
@@ -271,6 +273,42 @@ void DetectorConstruction::initializeMaterials ()
   }
   G4cout << "Cl. material: "<< ClMaterial << G4endl ;
   
+}
+
+
+//---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- 
+
+
+void DetectorConstruction::ConstructField () 
+{
+  G4cout << ">>>>>> DetectorConstruction::ConstructField ()::begin <<<<<<" << G4endl ;
+  static G4TransportationManager * trMgr = 
+    G4TransportationManager::GetTransportationManager () ; 
+
+  // A field object is held by a field manager
+  // Find the global Field Manager
+  G4FieldManager * globalFieldMgr = trMgr->GetFieldManager () ;
+  
+  if (!fieldIsInitialized)
+    {
+      //  Task 1c.1 Set different values for the field      
+      // Create the field and set it in the field manager
+      //    ****************
+      G4MagneticField * B_field = 0 ;
+
+      // magnetic field parallel to the beam direction (w/ tilt)
+      G4ThreeVector fieldVector (0.0522, 0.0522, 0.9973) ;   
+      fieldVector.mul (B_field_intensity * tesla) ;
+
+      B_field = new G4UniformMagField (fieldVector) ; 
+
+      globalFieldMgr->CreateChordFinder (B_field) ;      
+     // fieldMgr->GetChordFinder ()->SetDeltaChord (G4double newValue) ;
+      globalFieldMgr->SetDetectorField (B_field) ;
+      B_field_IsInitialized = false ;
+    }
+  G4cout << ">>>>>> DetectorConstruction::ConstructField ()::end <<< " << G4endl ;
+  return ;
 }
 
 

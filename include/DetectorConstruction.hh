@@ -86,6 +86,8 @@ public:
   G4TwoVector getNextCenter                      (std::pair<G4TwoVector,G4TwoVector>& theChamfer, G4TwoVector& thisCenter, const float& fiberExternalRadius) ;
   G4TwoVector centerOfTheFirstFibreOnSecondLayer (std::pair<G4TwoVector, G4TwoVector> & theChamfer, const float & fiberExternalRadius, G4TwoVector previousLayerStart) ;
   bool checkIfOutOfChamfer                       (double radius, G4TwoVector centre, std::vector<G4TwoVector> solid, int chamferIndex) ;
+  void initializeMaterials                       () ;
+  void ConstructField                            () ;
   
 public:
   G4VPhysicalVolume* Construct () ;
@@ -109,22 +111,22 @@ private:
   G4double  tower_side ;           // size of the calo tower containing fibres
 // FIXME put this in, in future
 //  G4Double  tolerance ;            // minimum distance between fibre and module side
-//  G4int     NfibresOnSide ;        // number of fibres in the tower
   G4int     NfibresAlongY ;        // number of fibres along the Y side of the calo tower
   G4double  margin ;               // minimum distance between fibres and tower sides
 
-  G4int    abs_material ;
+  G4int    abs_material ;          // absorber material
   
   G4int    fiberCore_material ;
   G4double fiberCore_radius ;
   G4int    fiberClad_material ;
   G4double fiberClad_radius ;
-  G4double fiber_length ;
+  G4double fiber_length ;          // will be set as module_z
   
-  G4double depth ;
+//  G4double depth ;
+  G4bool   B_field_IsInitialized ; 
+  G4double B_field_intensity ;     // magnetic field, in units of Tesla
   
   //Materials
-  void initializeMaterials () ;
   G4Material* AbMaterial ;
   G4Material* CoMaterial ;
   G4Material* ClMaterial ;

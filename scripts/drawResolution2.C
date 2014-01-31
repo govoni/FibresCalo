@@ -29,7 +29,7 @@ float addPointToGraph (TH1F * histo, TGraphErrors * meanG, TGraphErrors * sigmaG
   plotname += "_can" ;
   TCanvas * c = new TCanvas (plotname, plotname, 400, 400) ;
   histo->Fit ("gaus") ;
-  plotname += ".pdf" ;
+  plotname += ".png" ;
   
   float meanV = histo->GetFunction ("gaus")->GetParameter (1) ;
   float meanE = histo->GetFunction ("gaus")->GetParError (1) ;
@@ -47,7 +47,7 @@ float addPointToGraph (TH1F * histo, TGraphErrors * meanG, TGraphErrors * sigmaG
 
   histo->GetXaxis ()->SetRangeUser (meanV - 4 * sigmaV, meanV + 4 * sigmaV) ;
   histo->Draw () ;
-  c.Print (plotname, "pdf") ;
+  c.Print (plotname, "png") ;
   
   return sigmaV ;
 }
@@ -125,7 +125,7 @@ int drawResolution2 ()
   leg->AddEntry (stochastic, name_stochastic ,"l") ;
   leg->Draw () ;
 
-  c1->Print ("resolution_fit.pdf", "pdf") ;
+  c1->Print ("resolution_fit.png", "png") ;
   
 
 
