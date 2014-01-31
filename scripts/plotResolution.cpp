@@ -184,7 +184,7 @@ int main (int argc, char ** argv)
   // energy resolution, with the poissonian smearing
   TH1F h_sigmaEoverE ("sigmaEoverE", "sigmaEoverE", 100, -1., 1.) ;
   TH2F h_sigmaEoverE_vs_Ebeam ("sigmaEoverE_vs_Ebeam", "sigmaEoverE_vs_Ebeam", 
-                      45, 5, 50, 100, -1., 1.) ;
+                      45, 5, 50, 500, -1., 1.) ;
 
 
 
