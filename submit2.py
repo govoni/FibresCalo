@@ -73,6 +73,6 @@ if __name__ == '__main__':
     outputFolder = args.outTag + args.energy 
     configFileName = prepareConfigs (args.energy, outputFolder, args.bfield, args.events)
 
-    print 'submitting', args.jobsNum, 'jobs', to queue args.queue
+    print 'submitting', args.jobsNum, 'jobs to queue', args.queue
     for i in range (0,  args.jobsNum):
         submitJob (str (i), outputFolder, configFileName, args.queue)    
