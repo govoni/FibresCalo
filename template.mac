@@ -11,4 +11,4 @@
 # 3 degrees tilt
 /gps/direction 0.0523 0.0523 0.9986
 
-/run/beamOn 10000
+/run/beamOn EVENTS

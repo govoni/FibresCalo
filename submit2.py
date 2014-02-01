@@ -6,6 +6,8 @@ import os
 import commands
 from commands import getstatusoutput
 import datetime
+import argparse
+
 
 
 def replaceParameterInFile (inputFile, outputFile, replacementTag, replacementValue): 
@@ -21,18 +23,20 @@ def replaceParameterInFile (inputFile, outputFile, replacementTag, replacementVa
 # ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 
 
-def prepareConfigs (energy, outputFolder) :
+def prepareConfigs (energy, outputFolder, bfield, events) :
     GPSfileName = outputFolder + '.mac'
     replaceParameterInFile ('template.mac', GPSfileName, 'ENERGY', energy)
+    replaceParameterInFile (GPSfileName, GPSfileName, 'EVENTS', events)
     configFileName = outputFolder + '.cfg'
     replaceParameterInFile ('template.cfg', configFileName, 'GPSFILE', GPSfileName)
+    replaceParameterInFile (configFileName, configFileName, 'BFIELD', bfield)
     return configFileName
 
 
 # ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 
 
-def submitJob (jobID, outputFolder, configFileName):
+def submitJob (jobID, outputFolder, configFileName, queue):
     filename = 'job_' + outputFolder + '_' + jobID
     workingFolder = '/afs/cern.ch/user/g/govoni/scratch0/fibresCalo/FibresCalo'
     f = open (filename, 'w')
@@ -48,7 +52,7 @@ def submitJob (jobID, outputFolder, configFileName):
     f.write ('cmsStage out_' + filename + '.root /store/user/govoni/upgrade/' + outputFolder + '\n')
     f.close ()
     getstatusoutput ('chmod 755 ' + filename)
-    getstatusoutput ('bsub -q 2nd ' + filename)
+    getstatusoutput ('bsub -q ' + queue + ' + filename)
 
 
 # ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
@@ -56,14 +60,19 @@ def submitJob (jobID, outputFolder, configFileName):
 
 if __name__ == '__main__':
 
-    if len (sys.argv) < 3 : 
-        print 'usage :', sys.argv[0], 'jobsNumber baseFolderName','\n'
-        exit (1)
-    jobsNum = int (sys.argv[1])
-    energy = str (sys.argv[2])
-    outputFolder = 'fix_' + energy 
-    configFileName = prepareConfigs (energy, outputFolder)
+    parser = argparse.ArgumentParser (description = 'boh')
+    parser.add_argument('-q', '--queue'  , default= '1nd',  help='batch queue (1nd)')
+    parser.add_argument('-j', '--jobsNum', default= 1,      type=int, help='number of jobs (1)')
+    parser.add_argument('-e', '--energy' , default= '50',   help='beam energy (50)')
+    parser.add_argument('-o', '--outTag' , default= 'fix_', help='outfolder tag base name (fix_)')
+    parser.add_argument('-b', '--bfield' , default= '0',    help='magnetic filed value (0)')
+    parser.add_argument('-n', '--events' , default= '10000',help='number of generated events (10000)')
+    
+    args = parser.parse_args ()
 
-    print 'submitting', jobsNum, 'jobs'
-    for i in range (0, jobsNum):
-        submitJob (str (i), outputFolder, configFileName)    
+    outputFolder = args.outTag + args.energy 
+    configFileName = prepareConfigs (args.energy, outputFolder, args.bfield, args.events)
+
+    print 'submitting', args.jobsNum, 'jobs', to queue args.queue
+    for i in range (0,  args.jobsNum):
+        submitJob (str (i), outputFolder, configFileName, args.queue)    
