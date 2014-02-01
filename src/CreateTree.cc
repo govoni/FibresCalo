@@ -23,12 +23,16 @@ CreateTree::CreateTree (TString name, float tower_side)
   this->GetTree ()->Branch ("Event",             &this->Event,           "Event/I") ;
   this->GetTree ()->Branch ("depositedEnergy",   &this->depositedEnergy, "depositedEnergy/F") ;
   this->GetTree ()->Branch ("leakageEnergy",     &this->leakageEnergy,   "leakageEnergy/F") ;
+
   inputMomentum = new vector<float> (4, 0.) ; 
   this->GetTree ()->Branch ("inputMomentum",     "vector<float>",   &inputMomentum) ;
+
   inputInitialPosition = new vector<float> (3, 0.) ; 
   this->GetTree ()->Branch ("inputInitialPosition",     "vector<float>",   &inputInitialPosition) ;
+
   depositedEnergies = new vector<float> () ; 
   this->GetTree ()->Branch ("depositedEnergies", "vector<float>",   &depositedEnergies) ;
+
   depositFibres = new vector<int> () ; 
   this->GetTree ()->Branch ("depositFibres", "vector<int>",   &depositFibres) ;
   

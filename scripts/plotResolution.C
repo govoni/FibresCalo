@@ -141,7 +141,7 @@ void plotResolution (TString inputFile)
             observedEnergy += depositedEnergies->at (j) ;
             fullEnergy += totalEnergies->at (j) ;
             y = (j % fNtowersOnSide + 0.5) * towerSideLength - 0.5 * totalSideLength ;
-            x = (j / fNtowersOnSide + 0.5) * towerSideLength - 0.5 * totalSideLength ;
+            x = (j / fNtowersOncSide + 0.5) * towerSideLength - 0.5 * totalSideLength ;
             float radius = sqrt (
                 (x - inputInitialPosition->at (0)) * (x - inputInitialPosition->at (0)) +
                 (y - inputInitialPosition->at (1)) * (y - inputInitialPosition->at (1))
