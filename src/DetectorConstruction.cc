@@ -31,6 +31,10 @@
 //---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- 
 
 #include "DetectorConstruction.hh"
+#include <G4TransportationManager.hh>
+#include <G4MagneticField.hh>
+#include <G4UniformMagField.hh>
+#include <G4FieldManager.hh>
 #include "CreateTree.hh"
 #include <algorithm>
 #include <string>
@@ -57,8 +61,8 @@ DetectorConstruction::DetectorConstruction (const string& configFileName)
   
   config.readInto (fibres_distance, "fibres_distance") ;
   config.readInto (module_z, "module_z") ;
-//  config.readInto (NfibresOnSide, "NfibresOnSide") ;
   config.readInto (tower_side, "tower_side") ;
+  config.readInto (checkOverlaps, "checkOverlaps") ;
 
   config.readInto (abs_material, "abs_material") ;
   
@@ -83,10 +87,10 @@ DetectorConstruction::DetectorConstruction (const string& configFileName)
   NfibresAlongY = floor ((tower_side - 2 * margin - 0.5 * fibres_distance) / fibres_distance) + 1 ;
   fiber_length = module_z ;
 
-  expHall_x = tower_side * 4 ; 
-  expHall_y = tower_side * 4 ; 
-  expHall_z = module_z * 8 ;
-  
+  expHall_x = tower_side * 3 ; 
+  expHall_y = tower_side * 3 ; 
+  expHall_z = module_z * 3 ;
+
   B_field_IsInitialized = false ;
 
 }
@@ -112,23 +116,23 @@ G4VPhysicalVolume* DetectorConstruction::Construct ()
   
   // The experimental Hall
   // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
-  G4VSolid * worldS = new G4Box ("World", 0.5*expHall_x, 0.5*expHall_y, 0.5*expHall_z) ;
+  G4VSolid * worldS = new G4Box ("World", 0.5 * expHall_x, 0.5 * expHall_y, 0.5 * expHall_z) ;
   G4LogicalVolume * worldLV = new G4LogicalVolume (worldS, MyMaterials::Air (), "World", 0, 0, 0) ;
-  G4VPhysicalVolume * worldPV = new G4PVPlacement (0, G4ThreeVector (), worldLV, "World", 0, false, 0, true) ;
+  G4VPhysicalVolume * worldPV = new G4PVPlacement (0, G4ThreeVector (), worldLV, "World", 0, false, 0, checkOverlaps) ;
 
   // The embedding absorber, mimicking the rest of material around
   //   put an embedder four times as the detector in each direction, and fill it with absorber, 
   //   to quickly stop leaking showers and get an idea of where it would leak laterally
   // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
-  G4VSolid * embedderS = new G4Box ("embedder", 0.5*expHall_x, 0.5*expHall_y, 0.25*expHall_z) ;
+  G4VSolid * embedderS = new G4Box ("embedder", 0.5 * expHall_x, 0.5 * expHall_y, module_z) ;
   G4LogicalVolume * embedderLV = new G4LogicalVolume (embedderS, AbMaterial, "embedderLV", 0, 0, 0) ;
-  G4VPhysicalVolume * embedderPV = new G4PVPlacement (0, G4ThreeVector (0., 0., 0.25*expHall_z), embedderLV, "embedderPV", worldLV, false, 0, true) ;
+  G4VPhysicalVolume * embedderPV = new G4PVPlacement (0, G4ThreeVector (0., 0., 0.5 * module_z), embedderLV, "embedderPV", worldLV, false, 0, checkOverlaps) ;
 
   // The calorimeter
   // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
   G4VSolid * absorberS = new G4Box ("absorberS", 0.5 * tower_side, 0.5 * tower_side, 0.5 * module_z) ;
   G4LogicalVolume * absorberLV = new G4LogicalVolume (absorberS, AbMaterial, "absorberLV") ;
-  G4VPhysicalVolume * absorberPV = new G4PVPlacement (0, G4ThreeVector (), absorberLV, "absorberPV", embedderLV, false, 0, true) ;
+  G4VPhysicalVolume * absorberPV = new G4PVPlacement (0, G4ThreeVector (0., 0., -0.5 * module_z), absorberLV, "absorberPV", embedderLV, false, 0, checkOverlaps) ;
 
   // the fibres
   // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
@@ -140,11 +144,11 @@ G4VPhysicalVolume* DetectorConstruction::Construct ()
 
   G4VSolid * fiberCoreOutS           = new G4Tubs ("FiberCoreOutS", fiberCore_radius * 0.9999, fiberCore_radius, 0.5*fiber_length, 0.*deg, 360.*deg) ;
   G4LogicalVolume * fiberCoreOutLV   = new G4LogicalVolume (fiberCoreOutS, CoMaterial, "FiberCoreOutLV") ;
-  G4VPhysicalVolume * fiberCoreOutPV = new G4PVPlacement (0, G4ThreeVector (0., 0., 0.), fiberCoreOutLV, "FiberCoreOutPV", fiberCladLV, false, 0, true) ;
+  G4VPhysicalVolume * fiberCoreOutPV = new G4PVPlacement (0, G4ThreeVector (0., 0., 0.), fiberCoreOutLV, "FiberCoreOutPV", fiberCladLV, false, 0, checkOverlaps) ;
 
   G4VSolid * fiberCoreInsS           = new G4Tubs ("FiberCoreInsS", 0., fiberCore_radius * 0.9999, 0.5*fiber_length, 0.*deg, 360.*deg) ;
   G4LogicalVolume * fiberCoreInsLV   = new G4LogicalVolume (fiberCoreInsS, CoMaterial, "FiberCoreInsLV") ;
-  G4VPhysicalVolume * fiberCoreInsPV = new G4PVPlacement (0, G4ThreeVector (0., 0., 0.), fiberCoreInsLV, "FiberCoreInsPV", fiberCladLV, false, 0, true) ;
+  G4VPhysicalVolume * fiberCoreInsPV = new G4PVPlacement (0, G4ThreeVector (0., 0., 0.), fiberCoreInsLV, "FiberCoreInsPV", fiberCladLV, false, 0, checkOverlaps) ;
 */
 
   // triangular-based fibres matrix filling
@@ -173,7 +177,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct ()
           new G4PVPlacement (
               0,                           // rotation
               G4ThreeVector (x, y_c, 0.),  // translation
-              fiberCladLV, name, absorberLV, false, 0, true) ;
+              fiberCladLV, name, absorberLV, false, index, checkOverlaps) ;
           ++count_y ;
         } // loop on y direction
       ++count_x ;   
@@ -207,7 +211,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct ()
   
   G4VisAttributes* VisAttAbsorber = new G4VisAttributes (gray) ;
   VisAttAbsorber->SetVisibility (true) ;
-  VisAttAbsorber->SetForceWireframe (true) ;
+//  VisAttAbsorber->SetForceWireframe (true) ;
   absorberLV->SetVisAttributes (VisAttAbsorber) ;
  
 /*
@@ -289,7 +293,7 @@ void DetectorConstruction::ConstructField ()
   // Find the global Field Manager
   G4FieldManager * globalFieldMgr = trMgr->GetFieldManager () ;
   
-  if (!fieldIsInitialized)
+  if (!B_field_IsInitialized)
     {
       //  Task 1c.1 Set different values for the field      
       // Create the field and set it in the field manager
@@ -298,14 +302,14 @@ void DetectorConstruction::ConstructField ()
 
       // magnetic field parallel to the beam direction (w/ tilt)
       G4ThreeVector fieldVector (0.0522, 0.0522, 0.9973) ;   
-      fieldVector.mul (B_field_intensity * tesla) ;
+      fieldVector *= B_field_intensity * tesla ;
 
       B_field = new G4UniformMagField (fieldVector) ; 
 
       globalFieldMgr->CreateChordFinder (B_field) ;      
      // fieldMgr->GetChordFinder ()->SetDeltaChord (G4double newValue) ;
       globalFieldMgr->SetDetectorField (B_field) ;
-      B_field_IsInitialized = false ;
+      B_field_IsInitialized = true ;
     }
   G4cout << ">>>>>> DetectorConstruction::ConstructField ()::end <<< " << G4endl ;
   return ;

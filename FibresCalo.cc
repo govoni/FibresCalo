@@ -214,7 +214,8 @@ int main(int argc,char** argv)
   runManager->SetUserAction(stepping_action); 
   G4cout << ">>> Define SteppingAction::end <<<" << G4endl;
   
-  
+  string gps_instructions_file = "" ;
+    
   if (argc == 2)   // Define UI session for interactive mode
   {   
     // Initialize G4 kernel
@@ -244,7 +245,8 @@ int main(int argc,char** argv)
   {
     runManager -> Initialize();
     G4UImanager* UImanager = G4UImanager::GetUIpointer(); 
-    UImanager -> ApplyCommand("/control/execute gps.mac");
+    config.readInto (gps_instructions_file, "gps_instructions_file") ;
+    UImanager -> ApplyCommand("/control/execute " + gps_instructions_file);
   } 
   
   // Job termination

@@ -81,11 +81,6 @@ public:
   void fillHexagon (std::vector<G4TwoVector>& theBase, const float& side) ;
   
   std::pair<G4TwoVector,G4TwoVector> getChamfer  (std::vector<G4TwoVector>& theBase, const int& index) ;
-  G4TwoVector centerOfTheFirstFiber              (std::pair<G4TwoVector,G4TwoVector>& theChamfer, const int& fibresNumberInRow, const float& fiberExternalRadius, const int& numberOfRadius) ;
-  G4TwoVector centerOfTheFirstFiberPG            (std::pair<G4TwoVector,G4TwoVector>& theChamfer, const int& fibresNumberInRow, const float& fiberExternalRadius) ;
-  G4TwoVector getNextCenter                      (std::pair<G4TwoVector,G4TwoVector>& theChamfer, G4TwoVector& thisCenter, const float& fiberExternalRadius) ;
-  G4TwoVector centerOfTheFirstFibreOnSecondLayer (std::pair<G4TwoVector, G4TwoVector> & theChamfer, const float & fiberExternalRadius, G4TwoVector previousLayerStart) ;
-  bool checkIfOutOfChamfer                       (double radius, G4TwoVector centre, std::vector<G4TwoVector> solid, int chamferIndex) ;
   void initializeMaterials                       () ;
   void ConstructField                            () ;
   
@@ -95,12 +90,8 @@ public:
 private:
   G4VPhysicalVolume* fAbsorberPV ;      // the absorber physical volume
   G4VPhysicalVolume* fCrystalPV ;       // the crystal physical volume
-//  G4VPhysicalVolume* fFiberCorePV[4][100] ;   // the fiber physical volume
-//  G4VPhysicalVolume* fFiberCladPV[4][100] ;   // the fiber physical volume
 
-  std::vector <std::vector <G4VPhysicalVolume*> > fFiberCoreInsPV ;   // the fiber physical volume
-  std::vector <std::vector <G4VPhysicalVolume*> > fFiberCoreOutPV ;   // the fiber physical volume
-  std::vector <std::vector <G4VPhysicalVolume*> > fFiberCladPV ;      // the fiber physical volume
+  G4bool    checkOverlaps ;
   
   G4double  expHall_x ;
   G4double  expHall_y ;
