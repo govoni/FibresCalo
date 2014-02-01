@@ -52,7 +52,7 @@ def submitJob (jobID, outputFolder, configFileName, queue):
     f.write ('cmsStage out_' + filename + '.root /store/user/govoni/upgrade/' + outputFolder + '\n')
     f.close ()
     getstatusoutput ('chmod 755 ' + filename)
-    getstatusoutput ('bsub -q ' + queue + ' + filename')
+    getstatusoutput ('bsub -q ' + queue + ' -J ' + jobID + ' ' + filename)
 
 
 # ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----

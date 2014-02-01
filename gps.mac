@@ -1,7 +1,7 @@
 # Macro file for the 
 # initialization of G4GeneralParticleSource
 
-/gps/energy 20 GeV
+/gps/energy 50 GeV
 #/gps/ene/type Lin
 #/gps/ene/min 5 GeV
 #/gps/ene/max 50 GeV
@@ -25,4 +25,4 @@
 # /gps/direction 0 0 1
 
 #/tracking/verbose 1
-/run/beamOn 5
+/run/beamOn 10
