@@ -3,7 +3,7 @@
 float trivialRounding (float val) 
   {
     int result = int (val * 1000) ;
-    return result * 0.1 ;
+    return result * 0.1 ;    
   }
 
 
@@ -70,13 +70,18 @@ int drawResolution2 ()
   TFile * f_80 = new TFile ("out_job_fix_80_0.root") ;
   TH1F * h_80 = (TH1F *) f_80->Get ("sigmaEoverE") ;
   h_80->SetName ("resol_80") ;
+  TFile * f_120 = new TFile ("out_job_fix_120_0.root") ;
+  TH1F * h_120 = (TH1F *) f_120->Get ("sigmaEoverE") ;
+  h_120->SetName ("resol_120") ;
   
   TGraphErrors * meanG = new TGraphErrors () ; 
   TGraphErrors * sigmaG = new TGraphErrors () ; 
-  addPointToGraph (h_10, meanG, sigmaG, 10) ;
-  addPointToGraph (h_30, meanG, sigmaG, 30) ;
-  addPointToGraph (h_50, meanG, sigmaG, 50) ;
-  float initConstTerm = addPointToGraph (h_80, meanG, sigmaG, 80) ;
+  float initConstTerm = 0.02 ;
+  initConstTerm = addPointToGraph (h_10, meanG, sigmaG, 10) ;
+  initConstTerm = addPointToGraph (h_30, meanG, sigmaG, 30) ;
+  initConstTerm = addPointToGraph (h_50, meanG, sigmaG, 50) ;
+  initConstTerm = addPointToGraph (h_80, meanG, sigmaG, 80) ;
+  initConstTerm = addPointToGraph (h_120, meanG, sigmaG, 120) ;
   
   sigmaG->SetMarkerStyle (8) ;
   
