@@ -302,6 +302,7 @@ void DetectorConstruction::ConstructField ()
 
       // magnetic field parallel to the beam direction (w/ tilt)
       G4ThreeVector fieldVector (0.0522, 0.0522, 0.9973) ;   
+//      G4ThreeVector fieldVector (0., 1., 0.) ;   // debug of magnetic field
       fieldVector *= B_field_intensity * tesla ;
 
       B_field = new G4UniformMagField (fieldVector) ; 
