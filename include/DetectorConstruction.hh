@@ -65,7 +65,17 @@
 #include "G4ElementTable.hh"
 #include "G4TwoVector.hh"
 
+#include "G4ThreeVector.hh"
+#include "G4VisAttributes.hh"
 
+class G4LogicalVolume;
+class G4VPhysicalVolume;
+class G4Material;
+class G4Mag_UsualEqRhs;
+class G4MagIntegratorStepper;
+class G4ChordFinder;
+class G4UniformMagField;
+class G4GlobalMagFieldMessenger;
 
 class DetectorConstruction : public G4VUserDetectorConstruction
 {
@@ -112,10 +122,19 @@ private:
   G4int    fiberClad_material ;
   G4double fiberClad_radius ;
   G4double fiber_length ;          // will be set as module_z
+
+//  static G4ThreadLocal G4GlobalMagFieldMessenger * fMagFieldMessenger ; 
+//                                          // magnetic field messenger
   
 //  G4double depth ;
   G4bool   B_field_IsInitialized ; 
   G4double B_field_intensity ;     // magnetic field, in units of Tesla
+  G4double minStepMagneticField ;
+
+  G4UniformMagField * B_field ;
+  G4Mag_UsualEqRhs  * fEquationMagneticField ;
+  G4MagIntegratorStepper * stepperMagneticField ;
+  G4ChordFinder     * fChordFinder ;
   
   //Materials
   G4Material* AbMaterial ;

@@ -190,7 +190,6 @@ int main(int argc,char** argv)
   G4ThreeVector posCentre(
       0. * m, 
       0. * m, 
-//      -1. * (detector->GetModule_z () / m) * m // debug of the magnetic field
       -1. * (detector->GetModule_z () / m) / 2. * m
     ) ;
 

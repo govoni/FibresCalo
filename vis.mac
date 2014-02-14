@@ -75,9 +75,7 @@
 
 /units/list
 
-
-#/gps/energy 10 GeV
-/gps/energy 1 GeV
+/gps/energy 0.5 GeV
 /gps/particle e-
 
 /gps/pos/type Plane
