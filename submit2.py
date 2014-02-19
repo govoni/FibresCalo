@@ -23,7 +23,7 @@ def replaceParameterInFile (inputFile, outputFile, replacementTag, replacementVa
 # ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 
 
-def prepareConfigs (args, outputFolder, material) :
+def prepareConfigs (args, outputFolder) :
 
     if not os.path.exists (args.template + '.mac') or \
        not os.path.exists (args.template + '.cfg') :
@@ -79,15 +79,14 @@ if __name__ == '__main__':
     
     args = parser.parse_args ()
 
-    material = '-1'
-    if args.material == 'W' : material = '2'
-    elif args.material == 'Pb' : material = '3'
+    if args.material == 'W' : args.material = '2'
+    elif args.material == 'Pb' : args.material = '3'
     else:
         print 'the absorber material', args.material, 'is not implemented, quitting'
         sys.exit (1)
 
     outputFolder = args.outTag + args.energy 
-    configFileName = prepareConfigs (args, outputFolder, material)
+    configFileName = prepareConfigs (args, outputFolder)
 
     print 'submitting', args.jobsNum, 'jobs to queue', args.queue
     for i in range (0,  args.jobsNum):
