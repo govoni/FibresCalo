@@ -186,8 +186,6 @@ int main (int argc, char ** argv)
   TH2F h_sigmaEoverE_vs_Ebeam ("sigmaEoverE_vs_Ebeam", "sigmaEoverE_vs_Ebeam", 
                       45, 5, 50, 500, -1., 1.) ;
 
-
-
   // events analysis
   // ---- ---- ---- ---- ---- ---- ----  
 
