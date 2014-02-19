@@ -1,0 +1,14 @@
+# Macro file for the 
+# initialization of G4GeneralParticleSource
+
+/gps/energy ENERGY GeV
+/gps/particle e-
+/gps/pos/type Plane
+/gps/pos/shape Square
+/gps/pos/halfx 1.5 mm
+/gps/pos/halfy 1.5 mm
+
+# 3 degrees tilt
+/gps/direction 0.0523 0.0523 0.9986
+
+/run/beamOn EVENTS

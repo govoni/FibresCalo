@@ -23,14 +23,20 @@ def replaceParameterInFile (inputFile, outputFile, replacementTag, replacementVa
 # ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 
 
-def prepareConfigs (energy, outputFolder, bfield, events, material) :
+def prepareConfigs (args, outputFolder, material) :
+
+    if not os.path.exists (args.template + '.mac') or \
+       not os.path.exists (args.template + '.cfg') :
+        print 'one or more template files not existing'
+        sys.exit (1)
+    
     GPSfileName = outputFolder + '.mac'
-    replaceParameterInFile ('template.mac', GPSfileName, 'ENERGY', energy)
-    replaceParameterInFile (GPSfileName, GPSfileName, 'EVENTS', events)
+    replaceParameterInFile (args.template + '.mac', GPSfileName, 'ENERGY', args.energy)
+    replaceParameterInFile (GPSfileName, GPSfileName, 'EVENTS', args.events)
     configFileName = outputFolder + '.cfg'
-    replaceParameterInFile ('template.cfg', configFileName, 'GPSFILE', GPSfileName)
-    replaceParameterInFile (configFileName, configFileName, 'BFIELD', bfield)
-    replaceParameterInFile (configFileName, configFileName, 'MATERIAL', material)
+    replaceParameterInFile (args.template + '.cfg', configFileName, 'GPSFILE', GPSfileName)
+    replaceParameterInFile (configFileName, configFileName, 'BFIELD', args.bfield)
+    replaceParameterInFile (configFileName, configFileName, 'MATERIAL', args.material)
     return configFileName
 
 
@@ -53,7 +59,7 @@ def submitJob (jobID, outputFolder, configFileName, queue):
     f.write ('cmsStage out_' + filename + '.root /store/user/govoni/upgrade/' + outputFolder + '\n')
     f.close ()
     getstatusoutput ('chmod 755 ' + filename)
-    getstatusoutput ('bsub -q ' + queue + ' -J ' + filename + ' ' + filename)
+#    getstatusoutput ('bsub -q ' + queue + ' -J ' + filename + ' ' + filename)
 
 
 # ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
@@ -62,13 +68,14 @@ def submitJob (jobID, outputFolder, configFileName, queue):
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser (description = 'boh')
-    parser.add_argument('-q', '--queue'    , default= '1nd',   help='batch queue (1nd)')
-    parser.add_argument('-j', '--jobsNum'  , default= 1,       type=int, help='number of jobs (1)')
-    parser.add_argument('-e', '--energy'   , default= '50',    help='beam energy (50)')
-    parser.add_argument('-o', '--outTag'   , default= 'fix_',  help='outfolder tag base name (fix_)')
-    parser.add_argument('-b', '--bfield'   , default= '0',     help='magnetic filed value (0)')
-    parser.add_argument('-n', '--events'   , default= '10000', help='number of generated events (10000)')
-    parser.add_argument('-m', '--material' , default= 'W',     help='absorber material [W, Pb] (W)')
+    parser.add_argument('-q', '--queue'    , default= '1nd',      help='batch queue (1nd)')
+    parser.add_argument('-j', '--jobsNum'  , default= 1,          type=int, help='number of jobs (1)')
+    parser.add_argument('-e', '--energy'   , default= '50',       help='beam energy (50)')
+    parser.add_argument('-o', '--outTag'   , default= 'fix_',     help='outfolder tag base name (fix_)')
+    parser.add_argument('-b', '--bfield'   , default= '0',        help='magnetic filed value (0)')
+    parser.add_argument('-n', '--events'   , default= '10000',    help='number of generated events (10000)')
+    parser.add_argument('-m', '--material' , default= 'Pb',       help='absorber material [W, Pb] (W)')
+    parser.add_argument('-t', '--template' , default= 'template', help='basename of the template cfg files (template)')
     
     args = parser.parse_args ()
 
@@ -80,7 +87,7 @@ if __name__ == '__main__':
         sys.exit (1)
 
     outputFolder = args.outTag + args.energy 
-    configFileName = prepareConfigs (args.energy, outputFolder, args.bfield, args.events, material)
+    configFileName = prepareConfigs (args, outputFolder, material)
 
     print 'submitting', args.jobsNum, 'jobs to queue', args.queue
     for i in range (0,  args.jobsNum):
