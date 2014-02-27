@@ -270,7 +270,7 @@ void DetectorConstruction::initializeMaterials ()
   // define materials
   
   AbMaterial = NULL ;
-  if     ( abs_material == 1 ) AbMaterial = MyMaterials::Brass () ;
+  if      ( abs_material == 1 ) AbMaterial = MyMaterials::Brass () ;
   else if ( abs_material == 2 ) AbMaterial = MyMaterials::Tungsten () ;
   else if ( abs_material == 3 ) AbMaterial = MyMaterials::Lead () ;
   else if ( abs_material == 4 ) AbMaterial = MyMaterials::Iron () ;
@@ -286,6 +286,7 @@ void DetectorConstruction::initializeMaterials ()
   if      ( fiberCore_material == 1 ) CoMaterial = MyMaterials::Quartz () ;
   else if ( fiberCore_material == 2 ) CoMaterial = MyMaterials::SiO2_Ce () ;
   else if ( fiberCore_material == 3 ) CoMaterial = MyMaterials::DSB_Ce () ;
+  else if ( fiberCore_material == 4 ) CoMaterial = MyMaterials::LuAG_Ce () ;
   else
   {
     G4cerr << "<DetectorConstructioninitializeMaterials>: Invalid fiber core material specifier " << fiberCore_material << G4endl ;
@@ -297,6 +298,7 @@ void DetectorConstruction::initializeMaterials ()
   if      ( fiberClad_material == 1 ) ClMaterial = MyMaterials::Quartz () ;
   else if ( fiberClad_material == 2 ) ClMaterial = MyMaterials::SiO2_Ce () ;
   else if ( fiberClad_material == 3 ) ClMaterial = MyMaterials::DSB_Ce () ;
+  else if ( fiberClad_material == 4 ) ClMaterial = MyMaterials::LuAG_Ce () ;
   else
   {
     G4cerr << "<DetectorConstructioninitializeMaterials>: Invalid fiber clad material specifier " << fiberClad_material << G4endl ;
