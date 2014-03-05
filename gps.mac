@@ -1,28 +1,14 @@
-# Macro file for the 
+# Macro file for the
 # initialization of G4GeneralParticleSource
 
-/gps/energy 50 GeV
-#/gps/ene/type Lin
-#/gps/ene/min 5 GeV
-#/gps/ene/max 50 GeV
-#/gps/ene/gradient 0
-#/gps/ene/intercept 1
-
+/gps/energy 1 GeV
 /gps/particle e-
-
 /gps/pos/type Plane
 /gps/pos/shape Square
-/gps/pos/halfx 1.5 mm
-/gps/pos/halfy 1.5 mm
-
-#/gps/ang/type beam2d
-#/gps/ang/focuspoint 0 0 -1.50 m
-#/gps/ang/sigma_x 0.05 mrad
-#/gps/ang/sigma_y 0.05 mrad
+/gps/pos/halfx 3.0 mm
+/gps/pos/halfy 3.0 mm
 
 # 3 degrees tilt
 /gps/direction 0.0523 0.0523 0.9986
-# /gps/direction 0 0 1
 
-#/tracking/verbose 1
-/run/beamOn 10
+/run/beamOn 100
