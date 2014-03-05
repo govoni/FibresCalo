@@ -1,4 +1,3 @@
-    
 #include "SteppingAction.hh"
 
 #include "G4SteppingManager.hh"
@@ -66,26 +65,66 @@ void SteppingAction::UserSteppingAction (const G4Step * theStep)
   
   G4StepPoint * thePrePoint  = theStep->GetPreStepPoint () ;
   G4StepPoint * thePostPoint = theStep->GetPostStepPoint () ;
-  const G4ThreeVector & PPposition = thePostPoint->GetPosition () ;
+  const G4ThreeVector & thePrePosition  = thePrePoint->GetPosition () ;
+  const G4ThreeVector & thePostPosition = thePostPoint->GetPosition () ;
   G4VPhysicalVolume * thePrePV  = thePrePoint->GetPhysicalVolume () ;
   G4VPhysicalVolume * thePostPV = thePostPoint->GetPhysicalVolume () ;
   G4String thePrePVName  = "" ; if ( thePrePV )  thePrePVName  = thePrePV  -> GetName () ;
   G4String thePostPVName = "" ; if ( thePostPV ) thePostPVName = thePostPV -> GetName () ;
-  G4double energy = theStep->GetTotalEnergyDeposit () ;
-
-  // FIXME put a zero-suppression threshold
-  if (0. == energy/GeV) return ;
   
-  if (thePrePVName.contains ("Fiber"))
+  G4int nStep = theTrack -> GetCurrentStepNumber();
+  
+  
+  
+  // optical photon
+  if( particleType == G4OpticalPhoton::OpticalPhotonDefinition() )
+  {
+    G4String processName = theTrack->GetCreatorProcess()->GetProcessName();
+    
+    if( (theTrack->GetLogicalVolumeAtVertex()->GetName().contains("Fiber")) && (nStep == 1) && (processName == "Cerenkov") )
+    {
+      string fiberName (thePrePVName.data ()) ;
+      int index = to_int (fiberName) ;
+      CreateTree::Instance ()->AddCerenkovPhoton (index) ;
+    }
+    
+    theTrack->SetTrackStatus(fKillTrackAndSecondaries);
+  } // optical photon
+  
+  
+  
+  // non optical photon
+  else
+  {
+    G4double energy = theStep->GetTotalEnergyDeposit () - theStep->GetNonIonizingEnergyDeposit();
+    
+    // FIXME put a zero-suppression threshold
+    if ( energy == 0. ) return ;
+    
+    
+    if (thePrePVName.contains ("Fiber"))
     {
       string fiberName (thePrePVName.data ()) ;
       int index = to_int (fiberName) ;
       CreateTree::Instance ()->AddEnergyDeposit (index, energy/GeV) ;
     }
-  else if (thePrePVName == "embedderPV")
+    else if (thePrePVName == "embedderPV")
     {
-      CreateTree::Instance ()->leakeage->Fill (
-            PPposition.x (), PPposition.y (), energy/GeV) ;
+      CreateTree::Instance ()->leakeage->Fill ( thePrePosition.x (), thePrePosition.y (), energy/GeV) ;
     }  
-  return ;  
+    
+    
+    if( thePrePVName == "absorberPV" || thePrePVName.contains("Fiber") )
+    {
+      G4int iRadius = sqrt( pow(thePrePosition.x()/mm-CreateTree::Instance()->inputInitialPosition->at(0),2) +
+                            pow(thePrePosition.y()/mm-CreateTree::Instance()->inputInitialPosition->at(1),2) ) / CreateTree::Instance()->Radial_stepLength;
+      if( iRadius < 5000 ) CreateTree::Instance()->Radial_ion_energy_absorber[iRadius] += energy/GeV;
+      
+      G4int iDepth = (thePrePosition.z()/mm - CreateTree::Instance()->inputInitialPosition->at(2)) / CreateTree::Instance()->Longitudinal_stepLength;
+      if( iDepth < 5000 ) CreateTree::Instance()->Longitudinal_ion_energy_absorber[iDepth] += energy/GeV;
+    }
+    
+  } // non optical photon
+  
+  return ;
 }

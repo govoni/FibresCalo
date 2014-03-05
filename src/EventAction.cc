@@ -56,7 +56,13 @@ void EventAction::BeginOfEventAction (const G4Event* evt)
   G4double px = particle->GetPx () ;
   G4double py = particle->GetPy () ;
   G4double pz = particle->GetPz () ;
-
+  
+  // --------------------- STORE INFO FOR X_0 / R_M ----------------------------- //
+  int Radial_nSteps       = 5000;
+  int Longitudinal_nSteps = 5000;
+  CreateTree::Instance() -> Radial_stepLength       = 2500. / Radial_nSteps;       // in mm
+  CreateTree::Instance() -> Longitudinal_stepLength = 2500. / Longitudinal_nSteps; // in mm
+  
   // INSTANCE RUN/EVENT IN TREE
   CreateTree::Instance ()->Event = evt->GetEventID () ;
   CreateTree::Instance ()->inputMomentum->at (0) = px/GeV ;

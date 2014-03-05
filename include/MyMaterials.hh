@@ -33,6 +33,7 @@ public:
   static G4Material* PWO();
   static G4Material* DSB_Ce();
   static G4Material* SiO2_Ce();
+  static G4Material* YAG_Ce();
   
   static G4double fromNmToEv(G4double wavelength);
   static G4double fromEvToNm(G4double energy);

@@ -36,6 +36,17 @@ CreateTree::CreateTree (TString name, float tower_side)
   depositFibres = new vector<int> () ; 
   this->GetTree ()->Branch ("depositFibres", "vector<int>",   &depositFibres) ;
   
+  cerenkovPhotons = new vector<int> () ; 
+  this->GetTree ()->Branch ("cerenkovPhotons", "vector<int>",   &cerenkovPhotons) ;
+
+  cerenkovFibres = new vector<int> () ; 
+  this->GetTree ()->Branch ("cerenkovFibres", "vector<int>",   &cerenkovFibres) ;
+  
+  this->GetTree ()->Branch ("Radial_stepLength",               &Radial_stepLength,                "Radial_stepLength/F");
+  this->GetTree ()->Branch ("Longitudinal_stepLength",         &Longitudinal_stepLength,          "Longitudinal_stepLength/F");
+  this->GetTree ()->Branch ("Radial_ion_energy_absorber",       Radial_ion_energy_absorber,       "Radial_ion_energy_absorber[5000]/F");
+  this->GetTree ()->Branch ("Longitudinal_ion_energy_absorber", Longitudinal_ion_energy_absorber, "Longitudinal_ion_energy_absorber[5000]/F");
+  
   float side = 4 * tower_side ;
   float precision = 0.1 ; // mm
   leakeage = new TH2F ("leakeage", "leakeage", 
@@ -72,6 +83,28 @@ CreateTree::AddEnergyDeposit (int index, float deposit)
   else
     {
       depositedEnergies->at (where - depositFibres->begin ()) += deposit ;    
+    }
+  return ;
+}
+
+
+// ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+
+
+void
+CreateTree::AddCerenkovPhoton (int index)
+{
+  // find if it exists already
+  vector<int>::const_iterator where = find (cerenkovFibres->begin (), 
+                                            cerenkovFibres->end (), index) ;
+  if (cerenkovFibres->end () == where) 
+    {
+      cerenkovFibres->push_back (index) ;
+      cerenkovPhotons->push_back (1) ;
+    }   
+  else
+    {
+      cerenkovPhotons->at (where - cerenkovFibres->begin ()) += 1 ;    
     }
   return ;
 }
@@ -117,4 +150,14 @@ void CreateTree::Clear ()
     }
   depositedEnergies->clear () ;
   depositFibres->clear () ;
+  cerenkovPhotons->clear () ;
+  cerenkovFibres->clear () ;
+  
+  Radial_stepLength = 0.;
+  Longitudinal_stepLength = 0.;
+  for(int i = 0; i < 5000; ++i)
+  {
+    Radial_ion_energy_absorber[i] = 0.;
+    Longitudinal_ion_energy_absorber[i] = 0.;
+  }
 }

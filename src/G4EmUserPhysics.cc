@@ -110,31 +110,28 @@ void G4EmUserPhysics::ConstructProcess()
     G4ParticleDefinition* particle = theParticleIterator->value();
     G4ProcessManager* pmanager = particle->GetProcessManager();
     G4String particleName = particle->GetParticleName();
-
-    // turn on the optical photons tracing, the next three ifs
-/*
-    if (theCerenkovProcess->IsApplicable(*particle))
-    {
-      pmanager->AddProcess(theCerenkovProcess);
-      pmanager->SetProcessOrdering(theCerenkovProcess,idxPostStep);
-    }
-
-    if (theScintillationProcess->IsApplicable(*particle))
-    {
-      pmanager->AddProcess(theScintillationProcess);
-      pmanager->SetProcessOrderingToLast(theScintillationProcess, idxAtRest);
-      pmanager->SetProcessOrderingToLast(theScintillationProcess, idxPostStep);
-    }
-
-    if (particleName == "opticalphoton")
-    {
-      G4cout << " AddDiscreteProcess to OpticalPhoton " << G4endl;
-      pmanager->AddDiscreteProcess(theAbsorptionProcess);
-      pmanager->AddDiscreteProcess(theRayleighScatteringProcess);
-      pmanager->AddDiscreteProcess(theMieHGScatteringProcess);
-      pmanager->AddDiscreteProcess(theBoundaryProcess);
-    }
-*/    
+    
+    //if (theCerenkovProcess->IsApplicable(*particle))
+    //{
+    //  pmanager->AddProcess(theCerenkovProcess);
+    //  pmanager->SetProcessOrdering(theCerenkovProcess,idxPostStep);
+    //}
+    
+    //if (theScintillationProcess->IsApplicable(*particle))
+    //{
+    //  pmanager->AddProcess(theScintillationProcess);
+    //  pmanager->SetProcessOrderingToLast(theScintillationProcess, idxAtRest);
+    //  pmanager->SetProcessOrderingToLast(theScintillationProcess, idxPostStep);
+    //}
+    
+    //if (particleName == "opticalphoton")
+    //{
+    //  G4cout << " AddDiscreteProcess to OpticalPhoton " << G4endl;
+    //  pmanager->AddDiscreteProcess(theAbsorptionProcess);
+    //  pmanager->AddDiscreteProcess(theRayleighScatteringProcess);
+    //  pmanager->AddDiscreteProcess(theMieHGScatteringProcess);
+    //  pmanager->AddDiscreteProcess(theBoundaryProcess);
+    //}
   }
 }
 

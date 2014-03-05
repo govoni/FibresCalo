@@ -94,8 +94,8 @@ DetectorConstruction::DetectorConstruction (const string& configFileName)
 
   config.readInto (abs_material, "abs_material") ;
   
-  config.readInto (fiberCore_material, "fiberCore_material") ;
-  config.readInto (fiberCore_radius, "fiberCore_radius") ;
+  //config.readInto (fiberCore_material, "fiberCore_material") ;
+  //config.readInto (fiberCore_radius, "fiberCore_radius") ;
   config.readInto (fiberClad_material, "fiberClad_material") ;
   config.readInto (fiberClad_radius, "fiberClad_radius") ;
   config.readInto (fiber_length, "fiber_length") ;
@@ -281,24 +281,28 @@ void DetectorConstruction::initializeMaterials ()
     exit (-1) ;
   }
   G4cout << "Ab. material: "<< AbMaterial << G4endl ;
-    
+  
+  /*
   CoMaterial = NULL ;
   if      ( fiberCore_material == 1 ) CoMaterial = MyMaterials::Quartz () ;
   else if ( fiberCore_material == 2 ) CoMaterial = MyMaterials::SiO2_Ce () ;
   else if ( fiberCore_material == 3 ) CoMaterial = MyMaterials::DSB_Ce () ;
   else if ( fiberCore_material == 4 ) CoMaterial = MyMaterials::LuAG_Ce () ;
+  else if ( fiberCore_material == 5 ) CoMaterial = MyMaterials::YAG_Ce () ;
   else
   {
     G4cerr << "<DetectorConstructioninitializeMaterials>: Invalid fiber core material specifier " << fiberCore_material << G4endl ;
     exit (-1) ;
   }
   G4cout << "Co. material: "<< CoMaterial << G4endl ;
+  */
   
   ClMaterial = NULL ;
   if      ( fiberClad_material == 1 ) ClMaterial = MyMaterials::Quartz () ;
   else if ( fiberClad_material == 2 ) ClMaterial = MyMaterials::SiO2_Ce () ;
   else if ( fiberClad_material == 3 ) ClMaterial = MyMaterials::DSB_Ce () ;
   else if ( fiberClad_material == 4 ) ClMaterial = MyMaterials::LuAG_Ce () ;
+  else if ( fiberClad_material == 5 ) ClMaterial = MyMaterials::YAG_Ce () ;
   else
   {
     G4cerr << "<DetectorConstructioninitializeMaterials>: Invalid fiber clad material specifier " << fiberClad_material << G4endl ;

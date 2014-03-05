@@ -26,6 +26,7 @@ public:
   TTree*             GetTree  () const { return ftree ; } ;
   TString            GetName  () const { return fname ; } ;
   void               AddEnergyDeposit (int index, float deposit) ;
+  void               AddCerenkovPhoton (int index) ;
   int                Fill     () ;
   bool               Write    (TFile *) ;
   void               Clear    () ;
@@ -45,11 +46,20 @@ public:
   // index of the fibre where the deposit happens
   // from the PV name
   std::vector<int> * depositFibres ; 
+  // cerenkov photons produced in each fibre of a tower
+  std::vector<int> * cerenkovPhotons ;
+  // index of the fibre where the deposit happens
+  // from the PV name
+  std::vector<int> * cerenkovFibres ; 
+  
+  float Radial_stepLength;
+  float Longitudinal_stepLength;
+  float Radial_ion_energy_absorber[5000];
+  float Longitudinal_ion_energy_absorber[5000];
   
   TH2F * leakeage ;
 
   // to be filled at the beginning of the event generation only
   TNtuple * fibresPosition ; 
-
 
 } ;

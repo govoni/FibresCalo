@@ -281,6 +281,54 @@ G4Material* MyMaterials::SiO2_Ce()
 
 
 
+G4Material* MyMaterials::YAG_Ce()
+{
+  G4double a, z, density;
+  
+  G4Element* Y  = new G4Element("Silicon",   "Y",  z = 39., a = 88.01* g/mole);
+  G4Element* Al = new G4Element("Aluminium", "Al", z = 27., a = 28.09* g/mole);
+  G4Element* O  = new G4Element("Oxygen",    "O",  z =  8., a = 16.00* g/mole);
+  
+  G4Material* mat = new G4Material ("YAGCe", density = 4.3*g/cm3,2);
+  mat->AddElement(Y,3);
+  mat->AddElement(Al,5);
+  mat->AddElement(O,12);
+  
+  const G4int nEntries_RI = 3;
+  G4double PhotonEnergy_RI[nEntries_RI] =
+    { 1.0*eV, 1.84*eV, 4.08*eV };
+  G4double RefractiveIndex[nEntries_RI] =
+    { 1.832, 1.832, 1.832 };
+  //G4double Rayleigh[nEntries_RI] =
+  //  { 138.*mm, 138.*mm, 138.*mm };
+  
+  const G4int nEntries_ABS = 4;
+  G4double PhotonEnergy_ABS[nEntries_ABS] =
+    { 1.0 * eV, 1.84 * eV, 4.08 * eV, 6.26 * eV };
+  G4double Absorption[nEntries_ABS] =
+    { 138.*mm, 138.*mm, 138.*mm, 138. *mm };
+  
+  const G4int NUMENTRIES_1 = 5;
+  G4double FAST_Energy[NUMENTRIES_1]    = {1.8*eV,1.90*eV,2.7*eV,2.88*eV,4.08*eV};
+  G4double FAST_COMPONENT[NUMENTRIES_1] = {0.00,1.00,2.0,1.0,0.00};
+  
+  G4MaterialPropertiesTable* mt = new G4MaterialPropertiesTable();
+  mt->AddProperty ("RINDEX",    PhotonEnergy_RI,  RefractiveIndex, nEntries_RI);
+  mt->AddProperty ("ABSLENGTH", PhotonEnergy_ABS, Absorption,      nEntries_ABS);
+  mt->AddProperty("FASTCOMPONENT", FAST_Energy, FAST_COMPONENT, NUMENTRIES_1);
+  
+  mt->AddConstProperty("SCINTILLATIONYIELD",1800/MeV);
+  mt->AddConstProperty("RESOLUTIONSCALE",8.5);
+  mt->AddConstProperty("FASTTIMECONSTANT",55.*ns);
+  mt->AddConstProperty("YIELDRATIO",1.0);
+  mt->AddConstProperty("FASTSCINTILLATIONRISETIME",0.5*ns);
+  
+  mat->SetMaterialPropertiesTable(mt);
+  return mat;
+}
+
+
+
 G4Material* MyMaterials::Brass()
 {
   G4double a, z, density;
