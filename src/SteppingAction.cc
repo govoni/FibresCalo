@@ -61,6 +61,7 @@ SteppingAction::~SteppingAction ()
 void SteppingAction::UserSteppingAction (const G4Step * theStep)
 {
   G4Track* theTrack = theStep->GetTrack () ;
+  G4int trackID = theTrack->GetTrackID();
   G4ParticleDefinition* particleType = theTrack->GetDefinition () ;
   
   G4StepPoint * thePrePoint  = theStep->GetPreStepPoint () ;
@@ -73,6 +74,21 @@ void SteppingAction::UserSteppingAction (const G4Step * theStep)
   G4String thePostPVName = "" ; if ( thePostPV ) thePostPVName = thePostPV -> GetName () ;
   
   G4int nStep = theTrack -> GetCurrentStepNumber();
+  
+  
+  
+  //-----------------
+  // primary particle
+  if( trackID == 1 )
+  {
+    if( nStep-1 < 1000 )
+    {
+      CreateTree::Instance()->PrimaryParticleX[nStep-1] = thePrePosition.x()/mm;
+      CreateTree::Instance()->PrimaryParticleY[nStep-1] = thePrePosition.y()/mm;
+      CreateTree::Instance()->PrimaryParticleZ[nStep-1] = thePrePosition.z()/mm;
+      CreateTree::Instance()->PrimaryParticleE[nStep-1] = thePrePoint->GetTotalEnergy()/GeV;
+    }
+  }
   
   
   
@@ -104,14 +120,20 @@ void SteppingAction::UserSteppingAction (const G4Step * theStep)
     
     if (thePrePVName.contains ("Fiber"))
     {
+      CreateTree::Instance ()->depositedEnergyFibres += energy;
+      
       string fiberName (thePrePVName.data ()) ;
       int index = to_int (fiberName) ;
       CreateTree::Instance ()->AddEnergyDeposit (index, energy/GeV) ;
     }
+    else if (thePrePVName == "absorberPV")
+    {
+      CreateTree::Instance ()->depositedEnergyAbsorber += energy;
+    }
     else if (thePrePVName == "embedderPV")
     {
       CreateTree::Instance ()->leakeage->Fill ( thePrePosition.x (), thePrePosition.y (), energy/GeV) ;
-    }  
+    }
     
     
     if( thePrePVName == "absorberPV" || thePrePVName.contains("Fiber") )

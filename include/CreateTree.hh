@@ -36,7 +36,8 @@ public:
   int   Event ;
   int fNtowersOnSide ;
   int fNtowersOnSideSQ ;
-  float depositedEnergy ;
+  float depositedEnergyFibres ;
+  float depositedEnergyAbsorber ;
   // energy deposited in a block after the calorimeter
   float leakageEnergy ;
   std::vector<float> * inputMomentum ; // Px Py Pz E
@@ -56,6 +57,11 @@ public:
   float Longitudinal_stepLength;
   float Radial_ion_energy_absorber[5000];
   float Longitudinal_ion_energy_absorber[5000];
+  
+  float PrimaryParticleX[1000];
+  float PrimaryParticleY[1000];
+  float PrimaryParticleZ[1000];
+  float PrimaryParticleE[1000];
   
   TH2F * leakeage ;
 

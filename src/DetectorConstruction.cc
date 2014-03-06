@@ -187,8 +187,8 @@ G4VPhysicalVolume* DetectorConstruction::Construct ()
                             * (fibres_distance * 0.8660)) ;
   float start_y = 0.5 * (tower_side - fibres_distance * (NfibresAlongY - 0.5)) ;
   // loop on x direction
-  for (float x = - 0.5 * tower_side + start_x ; 
-       x < 1.01 * (0.5 * tower_side - margin) ; 
+  for (float x = -0.5 * tower_side + start_x ; 
+       x <= 0.5 * tower_side - margin ; 
        x += fibres_distance * 0.8660)
     {
       // loop on y direction 

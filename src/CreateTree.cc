@@ -19,33 +19,39 @@ CreateTree::CreateTree (TString name, float tower_side)
   this->fInstance = this ;
   this->fname     = name ;
   this->ftree     = new TTree (name,name) ;
-
-  this->GetTree ()->Branch ("Event",             &this->Event,           "Event/I") ;
-  this->GetTree ()->Branch ("depositedEnergy",   &this->depositedEnergy, "depositedEnergy/F") ;
-  this->GetTree ()->Branch ("leakageEnergy",     &this->leakageEnergy,   "leakageEnergy/F") ;
-
+  
+  this->GetTree ()->Branch ("Event",                  &this->Event,                                    "Event/I") ;
+  this->GetTree ()->Branch ("depositedEnergyFibres",  &this->depositedEnergyFibres,    "depositedEnergyFibres/F") ;
+  this->GetTree ()->Branch ("depositedEnergyAbsorber",&this->depositedEnergyAbsorber,"depositedEnergyAbsorber/F") ;
+  this->GetTree ()->Branch ("leakageEnergy",          &this->leakageEnergy,                    "leakageEnergy/F") ;
+  
   inputMomentum = new vector<float> (4, 0.) ; 
-  this->GetTree ()->Branch ("inputMomentum",     "vector<float>",   &inputMomentum) ;
-
+  this->GetTree ()->Branch ("inputMomentum","vector<float>",&inputMomentum) ;
+  
   inputInitialPosition = new vector<float> (3, 0.) ; 
-  this->GetTree ()->Branch ("inputInitialPosition",     "vector<float>",   &inputInitialPosition) ;
-
+  this->GetTree ()->Branch ("inputInitialPosition","vector<float>",&inputInitialPosition) ;
+  
   depositedEnergies = new vector<float> () ; 
-  this->GetTree ()->Branch ("depositedEnergies", "vector<float>",   &depositedEnergies) ;
-
+  this->GetTree ()->Branch ("depositedEnergies","vector<float>",&depositedEnergies) ;
+  
   depositFibres = new vector<int> () ; 
-  this->GetTree ()->Branch ("depositFibres", "vector<int>",   &depositFibres) ;
+  this->GetTree ()->Branch ("depositFibres","vector<int>",&depositFibres) ;
   
   cerenkovPhotons = new vector<int> () ; 
-  this->GetTree ()->Branch ("cerenkovPhotons", "vector<int>",   &cerenkovPhotons) ;
-
-  cerenkovFibres = new vector<int> () ; 
-  this->GetTree ()->Branch ("cerenkovFibres", "vector<int>",   &cerenkovFibres) ;
+  this->GetTree ()->Branch ("cerenkovPhotons","vector<int>",&cerenkovPhotons) ;
   
-  this->GetTree ()->Branch ("Radial_stepLength",               &Radial_stepLength,                "Radial_stepLength/F");
-  this->GetTree ()->Branch ("Longitudinal_stepLength",         &Longitudinal_stepLength,          "Longitudinal_stepLength/F");
-  this->GetTree ()->Branch ("Radial_ion_energy_absorber",       Radial_ion_energy_absorber,       "Radial_ion_energy_absorber[5000]/F");
+  cerenkovFibres = new vector<int> () ; 
+  this->GetTree ()->Branch ("cerenkovFibres","vector<int>",&cerenkovFibres) ;
+  
+  this->GetTree ()->Branch ("Radial_stepLength",               &Radial_stepLength,                                     "Radial_stepLength/F");
+  this->GetTree ()->Branch ("Longitudinal_stepLength",         &Longitudinal_stepLength,                         "Longitudinal_stepLength/F");
+  this->GetTree ()->Branch ("Radial_ion_energy_absorber",       Radial_ion_energy_absorber,             "Radial_ion_energy_absorber[5000]/F");
   this->GetTree ()->Branch ("Longitudinal_ion_energy_absorber", Longitudinal_ion_energy_absorber, "Longitudinal_ion_energy_absorber[5000]/F");
+  
+  this->GetTree()->Branch("PrimaryParticleX",PrimaryParticleX,"PrimaryParticleX[1000]/F");
+  this->GetTree()->Branch("PrimaryParticleY",PrimaryParticleY,"PrimaryParticleY[1000]/F");
+  this->GetTree()->Branch("PrimaryParticleZ",PrimaryParticleZ,"PrimaryParticleZ[1000]/F");
+  this->GetTree()->Branch("PrimaryParticleE",PrimaryParticleE,"PrimaryParticleE[1000]/F");
   
   float side = 4 * tower_side ;
   float precision = 0.1 ; // mm
@@ -138,16 +144,17 @@ bool CreateTree::Write (TFile * outfile)
 void CreateTree::Clear ()
 {
   Event	= 0 ;
-  depositedEnergy = 0. ;
+  depositedEnergyFibres = 0. ;
+  depositedEnergyAbsorber = 0. ;
   leakageEnergy = 0. ;
   for (int i = 0 ; i < 4 ; ++i) 
-    {
-      inputMomentum->at (i) = 0. ;
-    }
+  {
+    inputMomentum->at (i) = 0. ;
+  }
   for (int i = 0 ; i < 3 ; ++i) 
-    {
-      inputInitialPosition->at (i) = 0. ;
-    }
+  {
+    inputInitialPosition->at (i) = 0. ;
+  }
   depositedEnergies->clear () ;
   depositFibres->clear () ;
   cerenkovPhotons->clear () ;
@@ -159,5 +166,13 @@ void CreateTree::Clear ()
   {
     Radial_ion_energy_absorber[i] = 0.;
     Longitudinal_ion_energy_absorber[i] = 0.;
+  }
+  
+  for(int i = 0; i < 1000; ++i)
+  {
+    PrimaryParticleX[i] = 0.;
+    PrimaryParticleY[i] = 0.;
+    PrimaryParticleZ[i] = 0.;
+    PrimaryParticleE[i] = 0.;
   }
 }
