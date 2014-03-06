@@ -289,7 +289,7 @@ G4Material* MyMaterials::YAG_Ce()
   G4Element* Al = new G4Element("Aluminium", "Al", z = 27., a = 28.09* g/mole);
   G4Element* O  = new G4Element("Oxygen",    "O",  z =  8., a = 16.00* g/mole);
   
-  G4Material* mat = new G4Material ("YAGCe", density = 4.3*g/cm3,2);
+  G4Material* mat = new G4Material ("YAGCe", density = 4.3*g/cm3,3);
   mat->AddElement(Y,3);
   mat->AddElement(Al,5);
   mat->AddElement(O,12);
