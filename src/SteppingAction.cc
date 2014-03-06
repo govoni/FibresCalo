@@ -120,15 +120,15 @@ void SteppingAction::UserSteppingAction (const G4Step * theStep)
     
     if (thePrePVName.contains ("Fiber"))
     {
-      CreateTree::Instance ()->depositedEnergyFibres += energy;
+      CreateTree::Instance ()->depositedEnergyFibres += energy/GeV;
       
       string fiberName (thePrePVName.data ()) ;
       int index = to_int (fiberName) ;
-      CreateTree::Instance ()->AddEnergyDeposit (index, energy/GeV) ;
+      CreateTree::Instance ()->AddEnergyDeposit (index, energy/GeV);
     }
     else if (thePrePVName == "absorberPV")
     {
-      CreateTree::Instance ()->depositedEnergyAbsorber += energy;
+      CreateTree::Instance ()->depositedEnergyAbsorber += energy/GeV;
     }
     else if (thePrePVName == "embedderPV")
     {
