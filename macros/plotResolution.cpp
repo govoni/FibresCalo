@@ -77,7 +77,7 @@ int main (int argc, char ** argv)
   // init tree and basic vars
   // ---- ---- ---- ---- ---- ---- ----
 
-//  gROOT->ProcessLine ("#include <vector>") ; 
+  gROOT->ProcessLine ("#include <vector>") ; 
 
   if (argc < 2)
     {
@@ -148,8 +148,6 @@ int main (int argc, char ** argv)
       // loop on the towers composing the calorimeter
 	  for (int j = 0 ; j < depositedEnergies->size () ; ++j)
 	   {
-	     // skip even fibres, as they are assumed to be quarz only in this case
-	     if (depositFibres.at (j) % 2 == 0) continue ;
 		 observedEnergy += depositedEnergies->at (j) ;
 	   } // loop on the towers composing the calorimeter
    
@@ -226,7 +224,8 @@ int main (int argc, char ** argv)
       h_sigmaEoverE_vs_Ebeam.Fill (beamEnergy, sigmaEoverE) ;
     } //PG loop over events
 
-  TString outputFileName = "out_" + inputFileName ;
+  //TString outputFileName = "out_" + inputFileName ;
+  TString outputFileName = "out.root";
   TFile outfile (outputFileName, "recreate") ;
   outfile.cd () ;
   h_ErecoOverEgen_calib.Write () ;
