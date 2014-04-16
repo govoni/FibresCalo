@@ -1,5 +1,7 @@
 #include "TrackInformation.hh"
 
+using namespace CLHEP;
+
 
 
 G4Allocator<TrackInformation> aTrackInformationAllocator;
@@ -12,6 +14,7 @@ TrackInformation::TrackInformation()
   particlePosition = G4ThreeVector(0.,0.,0.);
   particleMomentum = G4ThreeVector(0.,0.,0.);
   particleEnergy = 0.;
+  particleProdTime = 0.;
   particleTime = 0.;
   
   parentDefinition = 0;
@@ -54,6 +57,7 @@ TrackInformation::TrackInformation(const TrackInformation* aTrackInfo)
   particlePosition = aTrackInfo->particlePosition;
   particleMomentum = aTrackInfo->particleMomentum;
   particleEnergy = aTrackInfo->particleEnergy;
+  particleProdTime = aTrackInfo->particleProdTime;
   particleTime = aTrackInfo->particleTime;
   
   parentDefinition = aTrackInfo->parentDefinition;

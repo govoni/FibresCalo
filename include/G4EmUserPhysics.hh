@@ -61,7 +61,7 @@ class G4EmUserPhysics : public G4VPhysicsConstructor
 {
 public:
 
-  G4EmUserPhysics(G4int ver = 1);
+  G4EmUserPhysics(const G4int& scint, const G4int& cher);
 
   virtual ~G4EmUserPhysics();
 
@@ -69,8 +69,9 @@ public:
   virtual void ConstructProcess();
 
 private:
-  G4int verbose;
-
+  G4int switchOnScintillation;
+  G4int switchOnCerenkov;
+  
   G4Cerenkov * theCerenkovProcess;
   G4Scintillation * theScintillationProcess;
   G4OpAbsorption * theAbsorptionProcess;

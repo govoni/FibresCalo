@@ -32,6 +32,7 @@ private:
   G4ThreeVector         particlePosition;
   G4ThreeVector         particleMomentum;
   G4double              particleEnergy;
+  G4double              particleProdTime;
   G4double              particleTime;
   
   G4ParticleDefinition* parentDefinition;
@@ -49,6 +50,7 @@ public:
   inline G4ThreeVector GetParticlePosition()            const { return particlePosition; };
   inline G4ThreeVector GetParticleMomentum()            const { return particleMomentum; };
   inline G4double GetParticleEnergy()                   const { return particleEnergy; };
+  inline G4double GetParticleProdTime()                 const { return particleProdTime; };
   inline G4double GetParticleTime()                     const { return particleTime; };
   
   inline G4ParticleDefinition* GetParentDefinintion() const { return parentDefinition; };
@@ -58,6 +60,8 @@ public:
   inline G4ThreeVector GetParentMomentum()            const { return parentMomentum; };
   inline G4double GetParentEnergy()                   const { return parentEnergy; };
   inline G4double GetParentTime()                     const { return parentTime; };
+  
+  inline void SetParticleProdTimeInformation(const G4double& prodTime) { particleProdTime = prodTime; };
   
   void SetParticleInformation(const TrackInformation* aTrackInfo);
   void SetParentInformation(const TrackInformation* aTrackInfo);

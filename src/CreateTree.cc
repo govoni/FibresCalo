@@ -20,28 +20,44 @@ CreateTree::CreateTree (TString name, float tower_side)
   this->fname     = name ;
   this->ftree     = new TTree (name,name) ;
   
-  this->GetTree ()->Branch ("Event",                  &this->Event,                                    "Event/I") ;
-  this->GetTree ()->Branch ("depositedEnergyFibres",  &this->depositedEnergyFibres,    "depositedEnergyFibres/F") ;
-  this->GetTree ()->Branch ("depositedEnergyAbsorber",&this->depositedEnergyAbsorber,"depositedEnergyAbsorber/F") ;
-  this->GetTree ()->Branch ("leakageEnergy",          &this->leakageEnergy,                    "leakageEnergy/F") ;
+  this->GetTree ()->Branch ("Event", &this->Event, "Event/I") ;
+  
   
   inputMomentum = new vector<float> (4, 0.) ; 
-  this->GetTree ()->Branch ("inputMomentum","vector<float>",&inputMomentum) ;
-  
   inputInitialPosition = new vector<float> (3, 0.) ; 
+  depositedEnergyFibresAtt = new vector<float> ();
+  depositedEnergies = new vector<float> () ; 
+  depositedEnergiesAtt = new map<int,vector<float> > () ; 
+  depositFibres = new vector<int> () ; 
+  cerenkovPhotons = new vector<int> () ; 
+  cerenkovFibres = new vector<int> () ; 
+  scintillationPhotons = new vector<int> () ; 
+  scintillationFibres = new vector<int> () ; 
+  
+  this->GetTree ()->Branch ("inputMomentum","vector<float>",&inputMomentum) ;
   this->GetTree ()->Branch ("inputInitialPosition","vector<float>",&inputInitialPosition) ;
   
-  depositedEnergies = new vector<float> () ; 
-  this->GetTree ()->Branch ("depositedEnergies","vector<float>",&depositedEnergies) ;
+  this->GetTree ()->Branch ("depositedEnergyTotal",     &this->depositedEnergyTotal,       "depositedEnergyTotal/F") ;
+  this->GetTree ()->Branch ("depositedEnergyFibres",    &this->depositedEnergyFibres,     "depositedEnergyFibres/F") ;
+  this->GetTree ()->Branch ("depositedEnergyAbsorber",  &this->depositedEnergyAbsorber, "depositedEnergyAbsorber/F") ;
+  this->GetTree ()->Branch ("depositedEnergySide",      &this->depositedEnergySide,         "depositedEnergySide/F") ;
+  this->GetTree ()->Branch ("depositedEnergyPost",      &this->depositedEnergyPost,         "depositedEnergyPost/F") ;
+  this->GetTree ()->Branch ("depositedEnergyWorld",     &this->depositedEnergyWorld,       "depositedEnergyWorld/F") ;
+  this->GetTree ()->Branch ("depositedEnergyFibresAtt", "vector<float>",&depositedEnergyFibresAtt);
   
-  depositFibres = new vector<int> () ; 
+  this->GetTree ()->Branch ("tot_phot_cer",     &this->tot_phot_cer,         "tot_phot_cer/I") ;
+  this->GetTree ()->Branch ("tot_gap_phot_cer", &this->tot_gap_phot_cer, "tot_gap_phot_cer/I") ;
+  this->GetTree ()->Branch ("tot_det_phot_cer", &this->tot_det_phot_cer, "tot_det_phot_cer/I") ;
+  
+  this->GetTree ()->Branch ("depositedEnergies","vector<float>",&depositedEnergies) ;
+  this->GetTree ()->Branch ("depositedEnergiesAtt","map<int,vector<float> >",&depositedEnergiesAtt) ;
   this->GetTree ()->Branch ("depositFibres","vector<int>",&depositFibres) ;
   
-  cerenkovPhotons = new vector<int> () ; 
   this->GetTree ()->Branch ("cerenkovPhotons","vector<int>",&cerenkovPhotons) ;
-  
-  cerenkovFibres = new vector<int> () ; 
   this->GetTree ()->Branch ("cerenkovFibres","vector<int>",&cerenkovFibres) ;
+  
+  this->GetTree ()->Branch ("scintillationPhotons","vector<int>",&scintillationPhotons) ;
+  this->GetTree ()->Branch ("scintillationFibres","vector<int>",&scintillationFibres) ;
   
   this->GetTree ()->Branch ("Radial_stepLength",               &Radial_stepLength,                                     "Radial_stepLength/F");
   this->GetTree ()->Branch ("Longitudinal_stepLength",         &Longitudinal_stepLength,                         "Longitudinal_stepLength/F");
@@ -53,14 +69,17 @@ CreateTree::CreateTree (TString name, float tower_side)
   this->GetTree()->Branch("PrimaryParticleZ",PrimaryParticleZ,"PrimaryParticleZ[1000]/F");
   this->GetTree()->Branch("PrimaryParticleE",PrimaryParticleE,"PrimaryParticleE[1000]/F");
   
-  float side = 4 * tower_side ;
-  float precision = 0.1 ; // mm
-  leakeage = new TH2F ("leakeage", "leakeage", 
-                       int (side / precision), -1 * side, side, 
-                       int (side / precision), -1 * side, side) ;
-
+  
+  h_phot_cer_lambda = new TH1F("h_phot_cer_lambda","",1000,250.,1250.);
+  h_phot_cer_E = new TH1F("h_phot_cer_E","",1000,0.,5.);
+  h_phot_cer_time = new TH1F("h_phot_cer_time","",10000,0.,10000.);
+  
+  h_phot_cer_gap_lambda = new TH1F("h_phot_cer_gap_lambda","",1000,250.,1250.);
+  h_phot_cer_gap_E = new TH1F("h_phot_cer_gap_E","",1000,0.,5.);
+  h_phot_cer_gap_time = new TH1F("h_phot_cer_gap_time","",10000,0.,10000.);
+  
   fibresPosition = new TNtuple ("fibresPosition", "fibresPosition", "N:x:y") ;
-
+  
   this->Clear () ;  
 }
 
@@ -76,7 +95,7 @@ CreateTree::~CreateTree ()
 
 
 void
-CreateTree::AddEnergyDeposit (int index, float deposit)
+CreateTree::AddEnergyDeposit (int index, float deposit, std::vector<float> depositAtt)
 {
   // find if it exists already
   vector<int>::const_iterator where = find (depositFibres->begin (), 
@@ -85,10 +104,36 @@ CreateTree::AddEnergyDeposit (int index, float deposit)
     {
       depositFibres->push_back (index) ;
       depositedEnergies->push_back (deposit) ;
+      for(unsigned int it = 0; it < depositAtt.size(); ++it)
+        ((*depositedEnergiesAtt)[it]).push_back (depositAtt.at(it)) ;
     }   
   else
     {
-      depositedEnergies->at (where - depositFibres->begin ()) += deposit ;    
+      depositedEnergies->at (where - depositFibres->begin ()) += deposit ;
+      for(unsigned int it = 0; it < depositAtt.size(); ++it)
+        ((*depositedEnergiesAtt)[it]).at (where - depositFibres->begin ()) += depositAtt.at(it) ;
+    }
+  return ;
+}
+
+
+// ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+
+
+void
+CreateTree::AddScintillationPhoton (int index)
+{
+  // find if it exists already
+  vector<int>::const_iterator where = find (scintillationFibres->begin (), 
+                                            scintillationFibres->end (), index) ;
+  if (scintillationFibres->end () == where) 
+    {
+      scintillationFibres->push_back (index) ;
+      scintillationPhotons->push_back (1) ;
+    }   
+  else
+    {
+      scintillationPhotons->at (where - scintillationFibres->begin ()) += 1 ;    
     }
   return ;
 }
@@ -133,7 +178,12 @@ bool CreateTree::Write (TFile * outfile)
   outfile->cd () ;
   ftree->Write () ;
   fibresPosition->Write () ;
-  leakeage->Write () ;
+  h_phot_cer_lambda->Write();
+  h_phot_cer_E->Write();
+  h_phot_cer_time->Write();
+  h_phot_cer_gap_lambda->Write();
+  h_phot_cer_gap_E->Write();
+  h_phot_cer_gap_time->Write();
   return true ;
 }
 
@@ -144,9 +194,20 @@ bool CreateTree::Write (TFile * outfile)
 void CreateTree::Clear ()
 {
   Event	= 0 ;
+  
+  depositedEnergyTotal = 0. ;
   depositedEnergyFibres = 0. ;
   depositedEnergyAbsorber = 0. ;
-  leakageEnergy = 0. ;
+  depositedEnergySide = 0. ;
+  depositedEnergyPost = 0. ;
+  depositedEnergyWorld = 0. ;
+  depositedEnergyFibresAtt->clear() ;
+  depositedEnergyFibresAtt->resize(CreateTree::Instance()->attLengths.size(),0);
+  
+  tot_phot_cer = 0;
+  tot_det_phot_cer = 0;
+  tot_gap_phot_cer = 0;
+      
   for (int i = 0 ; i < 4 ; ++i) 
   {
     inputMomentum->at (i) = 0. ;
@@ -155,8 +216,12 @@ void CreateTree::Clear ()
   {
     inputInitialPosition->at (i) = 0. ;
   }
+  
   depositedEnergies->clear () ;
+  depositedEnergiesAtt->clear () ;
   depositFibres->clear () ;
+  scintillationPhotons->clear () ;
+  scintillationFibres->clear () ;
   cerenkovPhotons->clear () ;
   cerenkovFibres->clear () ;
   

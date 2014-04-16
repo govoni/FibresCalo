@@ -44,12 +44,12 @@ bool ConfigFile::keyExists( const string& key ) const
 
 
 /* static */
-void ConfigFile::trim( string& s )
+void ConfigFile::trim( string& st )
 {
 	// Remove leading and trailing whitespace
 	static const char whitespace[] = " \n\t\v\r\f";
-	s.erase( 0, s.find_first_not_of(whitespace) );
-	s.erase( s.find_last_not_of(whitespace) + 1U );
+	st.erase( 0, st.find_first_not_of(whitespace) );
+	st.erase( st.find_last_not_of(whitespace) + 1U );
 }
 
 

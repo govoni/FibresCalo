@@ -2,35 +2,57 @@
 //
 
 #ifndef SteppingAction_H
-#define SteppingACtion_H 1
+#define SteppingAction_H 1
 
-#include "globals.hh"
 #include "G4UserSteppingAction.hh"
+#include "G4SteppingManager.hh"
+#include "G4SDManager.hh"
+#include "G4EventManager.hh"
+#include "EventAction.hh"
+#include "G4ProcessManager.hh"
+#include "G4Track.hh"
+#include "G4Step.hh"
+#include "G4Event.hh"
+#include "G4StepPoint.hh"
+#include "G4TrackStatus.hh"
+#include "G4VPhysicalVolume.hh"
+#include "G4ParticleDefinition.hh"
+#include "G4ParticleTypes.hh"
+#include "G4OpBoundaryProcess.hh"
+#include "G4UnitsTable.hh"
+
+#include "CreateTree.hh"
+#include "DetectorConstruction.hh"
+#include "TrackInformation.hh"
+#include "MyMaterials.hh"
+#include "LedFiberTiming.hh"
+
 #include <iostream>
+#include <vector>
 
 #include "TFile.h"
 #include "TTree.h"
 #include "TString.h"
-#include <vector>
+#include "TRandom3.h"
 
 
-//class SteppingMessenger;
 
 class SteppingAction : public G4UserSteppingAction
 {
 public:
 
-  SteppingAction();
+  SteppingAction(DetectorConstruction* detectorConstruction,
+                 const G4int& scint, const G4int& cher);
   ~SteppingAction();
   virtual void UserSteppingAction(const G4Step*);
-
-  //void SetOneStepPrimaries(G4bool b){oneStepPrimaries=b;}
-  //G4bool GetOneStepPrimaries(){return oneStepPrimaries;}
   
-// private:
-
-//   G4bool oneStepPrimaries;
-//   SteppingMessenger* steppingMessenger;
+  
+private:
+  DetectorConstruction* fDetectorConstruction;  
+  Fiber* fFiber;  
+  
+  G4int propagateScintillation;
+  G4int propagateCerenkov;
 };
 
 #endif

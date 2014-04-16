@@ -1,13 +1,15 @@
+#ifndef CreateTree_H
+#define CreateTree_H 1
+
 #include <iostream>
 #include <vector>
 #include <map>
 
-#include "TNtuple.h"
 #include "TH2F.h"
 #include "TH3F.h"
 #include "TFile.h"
 #include "TTree.h"
-#include "TString.h"
+#include "TNtuple.h"
 
 
 
@@ -25,7 +27,8 @@ public:
   
   TTree*             GetTree  () const { return ftree ; } ;
   TString            GetName  () const { return fname ; } ;
-  void               AddEnergyDeposit (int index, float deposit) ;
+  void               AddEnergyDeposit (int index, float deposit, std::vector<float> depositAtt) ;
+  void               AddScintillationPhoton (int index) ;
   void               AddCerenkovPhoton (int index) ;
   int                Fill     () ;
   bool               Write    (TFile *) ;
@@ -34,23 +37,36 @@ public:
   static CreateTree* fInstance ;
   
   int   Event ;
-  int fNtowersOnSide ;
-  int fNtowersOnSideSQ ;
-  float depositedEnergyFibres ;
-  float depositedEnergyAbsorber ;
-  // energy deposited in a block after the calorimeter
-  float leakageEnergy ;
+  
   std::vector<float> * inputMomentum ; // Px Py Pz E
   std::vector<float> * inputInitialPosition ; // x, y, z
+  
+  float depositedEnergyTotal ;
+  float depositedEnergyFibres ;
+  float depositedEnergyAbsorber ;
+  float depositedEnergySide ;
+  float depositedEnergyPost ;
+  float depositedEnergyWorld ;
+  std::vector<float> * depositedEnergyFibresAtt ;
+  
+  int tot_phot_cer;
+  int tot_det_phot_cer;
+  int tot_gap_phot_cer;
+    
   // energy deposited in each fibre of a tower
   std::vector<float> * depositedEnergies ;
+  std::map<int,std::vector<float> > * depositedEnergiesAtt ;
   // index of the fibre where the deposit happens
-  // from the PV name
   std::vector<int> * depositFibres ; 
+  
+  // scintillation photons produced in each fibre of a tower
+  std::vector<int> * scintillationPhotons ;
+  // index of the fibre where the deposit happens
+  std::vector<int> * scintillationFibres ; 
+  
   // cerenkov photons produced in each fibre of a tower
   std::vector<int> * cerenkovPhotons ;
   // index of the fibre where the deposit happens
-  // from the PV name
   std::vector<int> * cerenkovFibres ; 
   
   float Radial_stepLength;
@@ -63,9 +79,21 @@ public:
   float PrimaryParticleZ[1000];
   float PrimaryParticleE[1000];
   
-  TH2F * leakeage ;
+  // histograms
+  TH1F* h_phot_cer_lambda;
+  TH1F* h_phot_cer_E;
+  TH1F* h_phot_cer_time;
+  
+  TH1F* h_phot_cer_gap_lambda;
+  TH1F* h_phot_cer_gap_E;
+  TH1F* h_phot_cer_gap_time;
+  
+  TH2F * leakage ;
 
   // to be filled at the beginning of the event generation only
-  TNtuple * fibresPosition ; 
-
+  TNtuple * fibresPosition ;
+  
+  std::vector<double> attLengths;
 } ;
+
+#endif

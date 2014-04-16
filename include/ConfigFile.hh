@@ -101,20 +101,20 @@ public:
 	string getComment() const { return myComment; }
 	string getSentry() const { return mySentry; }
 	string getVectorSep() const {return myVectorSep; }
-	string setDelimiter( const string& s )
-		{ string old = myDelimiter;  myDelimiter = s;  return old; }  
-	string setComment( const string& s )
-		{ string old = myComment;  myComment = s;  return old; }
-	string settVectorSep( const string& s )
-		{ string old = myVectorSep;  myVectorSep = s;  return old; }
+	string setDelimiter( const string& st )
+		{ string old = myDelimiter;  myDelimiter = st;  return old; }  
+	string setComment( const string& st )
+		{ string old = myComment;  myComment = st;  return old; }
+	string settVectorSep( const string& st )
+		{ string old = myVectorSep;  myVectorSep = st;  return old; }
 	// Write or read configuration
 	friend std::ostream& operator<<( std::ostream& os, const ConfigFile& cf );
 	friend std::istream& operator>>( std::istream& is, ConfigFile& cf );
 	
 protected:
-	template<class T> static string T_as_string( const T& t );
-	template<class T> static T string_as_T( const string& s );
-	static void trim( string& s );
+        template<class T> static string T_as_string( const T& t );
+        template<class T> static T string_as_T( const string& st );
+	static void trim( string& st );
 
 
 // Exception types
@@ -144,12 +144,12 @@ string ConfigFile::T_as_string( const T& t )
 
 /* static */
 template<class T>
-T ConfigFile::string_as_T( const string& s )
+T ConfigFile::string_as_T( const string& st )
 {
 	// Convert from a string to a T
 	// Type T must support >> operator
 	T t;
-	std::istringstream ist(s);
+	std::istringstream ist(st);
 	ist >> t;
 	return t;
 }
@@ -157,23 +157,23 @@ T ConfigFile::string_as_T( const string& s )
 
 /* static */
 template<>
-inline string ConfigFile::string_as_T<string>( const string& s )
+inline string ConfigFile::string_as_T<string>( const string& st )
 {
 	// Convert from a string to a string
 	// In other words, do nothing
-	return s;
+	return st;
 }
 
 
 /* static */
 template<>
-inline bool ConfigFile::string_as_T<bool>( const string& s )
+inline bool ConfigFile::string_as_T<bool>( const string& st )
 {
 	// Convert from a string to a bool
 	// Interpret "false", "F", "no", "n", "0" as false
 	// Interpret "true", "T", "yes", "y", "1", "-1", or anything else as true
 	bool b = true;
-	string sup = s;
+	string sup = st;
 	for( string::iterator p = sup.begin(); p != sup.end(); ++p )
 		*p = toupper(*p);  // make string all caps
 	if( sup==string("FALSE") || sup==string("F") ||

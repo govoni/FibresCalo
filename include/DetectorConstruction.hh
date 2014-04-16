@@ -39,107 +39,97 @@
 #include <utility>
 
 #include "ConfigFile.hh"
-#include "TString.h"
-
-#include "globals.hh"
-#include "G4Material.hh"
 #include "MyMaterials.hh"
-#include "G4Element.hh"
+#include "LedFiberTiming.hh"
+
+#include "G4Material.hh"
+#include "G4VUserDetectorConstruction.hh"
 #include "G4LogicalBorderSurface.hh"
 #include "G4LogicalSkinSurface.hh"
 #include "G4OpticalSurface.hh"
 #include "G4Box.hh"
-#include "G4ExtrudedSolid.hh"
+#include "G4Tubs.hh"
 #include "G4LogicalVolume.hh"
-#include "G4TwoVector.hh"
-#include "G4ThreeVector.hh"
 #include "G4PVPlacement.hh"
 #include "G4PVReplica.hh"
 #include "G4SubtractionSolid.hh"
-#include "G4Tubs.hh"
 #include "G4VisAttributes.hh"
-#include "G4VUserDetectorConstruction.hh"
-#include "G4Material.hh"
-#include "G4MaterialTable.hh"
-#include "G4Element.hh"
-#include "G4ElementTable.hh"
-#include "G4TwoVector.hh"
+#include "G4UniformMagField.hh"
 
-#include "G4ThreeVector.hh"
-#include "G4VisAttributes.hh"
 
-class G4LogicalVolume;
-class G4VPhysicalVolume;
-class G4Material;
-class G4Mag_UsualEqRhs;
-class G4MagIntegratorStepper;
-class G4ChordFinder;
-class G4UniformMagField;
-class G4GlobalMagFieldMessenger;
 
 class DetectorConstruction : public G4VUserDetectorConstruction
 {
 public:
+  
+  //! ctor
   DetectorConstruction  () ;
   DetectorConstruction  (const string& configFileName) ;
+  
+  //! dtor
   ~DetectorConstruction () ;
   
-  G4double GetModule_z () const { return module_z ; } ;
-  
-  void fillPolygon (std::vector<G4TwoVector>& theBase, const float& side, const float& chamfer) ;
-  void fillSquare (std::vector<G4TwoVector>& theBase, const float& side) ;
-  void fillHexagon (std::vector<G4TwoVector>& theBase, const float& side) ;
-  
-  std::pair<G4TwoVector,G4TwoVector> getChamfer  (std::vector<G4TwoVector>& theBase, const int& index) ;
-  void initializeMaterials                       () ;
-  void ConstructField                            () ;
-  
-public:
+  //! construct method
   G4VPhysicalVolume* Construct () ;
   
+  //! other methods
+  G4double GetModule_z () const { return module_z ; } ;
+  
+  void initializeMaterials () ;
+  void ConstructField () ;
+  
+  Fiber GetFiber() { return fib ; } ;
+  
+  
 private:
-  G4VPhysicalVolume* fAbsorberPV ;      // the absorber physical volume
-  G4VPhysicalVolume* fCrystalPV ;       // the crystal physical volume
-
   G4bool    checkOverlaps ;
   
   G4double  expHall_x ;
   G4double  expHall_y ;
   G4double  expHall_z ;
             
-  G4double  fibres_distance ;      // distance between fibres
-  G4double  module_z ;             // length of the calo tower
-  G4double  tower_side ;           // size of the calo tower containing fibres
-// FIXME put this in, in future
-//  G4Double  tolerance ;            // minimum distance between fibre and module side
+  G4int    world_material ;    // world material
+  
+  G4int    abs_material ;    // absorber material
+  G4double W_fraction ;      // fraction of Tungsten in the alloy
+  G4double hole_radius ;     // radius of the holes
+  G4double module_z ;        // will be set as fibre length
+  G4double module_xy ;       // size of the calo tower containing fibres
+  
   G4int     NfibresAlongY ;        // number of fibres along the Y side of the calo tower
   G4double  margin ;               // minimum distance between fibres and tower sides
-
-  G4int    abs_material ;          // absorber material
+  // FIXME put this in, in future
+  //G4Double  tolerance ;            // minimum distance between fibre and module side
   
-  G4int    fiberCore_material ;
-  G4double fiberCore_radius ;
-  G4int    fiberClad_material ;
-  G4double fiberClad_radius ;
-  G4double fiber_length ;          // will be set as module_z
-
-//  static G4ThreadLocal G4GlobalMagFieldMessenger * fMagFieldMessenger ; 
-//                                          // magnetic field messenger
+  G4int    fibre_material ;
+  G4double fibre_radius ;
+  G4double fibre_length ;      
+  G4double fibre_distance ;    // distance between fibres
+  G4double fibre_absLength ;   // absorption length in the fiber
   
-//  G4double depth ;
+  G4int gap_material ;
+  G4double gap_l ;
+  
+  G4int det_material ;
+  G4double det_l ;
+    
+  G4double depth ;
+  
+  std::vector<G4double> attLengths;
+  
+  G4UniformMagField * B_field ;
   G4bool   B_field_IsInitialized ; 
   G4double B_field_intensity ;     // magnetic field, in units of Tesla
-  G4double minStepMagneticField ;
-
-  G4UniformMagField * B_field ;
-  G4Mag_UsualEqRhs  * fEquationMagneticField ;
-  G4MagIntegratorStepper * stepperMagneticField ;
-  G4ChordFinder     * fChordFinder ;
+  
+  Fiber fib ;
   
   //Materials
+  G4Material* WoMaterial ;
   G4Material* AbMaterial ;
   G4Material* CoMaterial ;
   G4Material* ClMaterial ;
+  G4Material* GaMaterial ;
+  G4Material* DeMaterial ;
 } ;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

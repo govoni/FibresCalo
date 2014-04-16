@@ -1,3 +1,6 @@
+#ifndef MyMaterials_hh
+#define MyMaterials_hh
+
 #include "G4Material.hh"
 #include "G4MaterialTable.hh"
 #include "G4Element.hh"
@@ -23,6 +26,7 @@ public:
   static G4Material* Lead();
   static G4Material* Brass();
   static G4Material* Tungsten();
+  static G4Material* CopperTungstenAlloy(const G4double& WFrac);
   static G4Material* Quartz();
   static G4Material* OpticalGrease();
   static G4Material* LSO();
@@ -39,3 +43,5 @@ public:
   static G4double fromEvToNm(G4double energy);
   static G4double CalculateSellmeier(int size, G4double indexZero, G4double *nVec, G4double *lVec, G4double wavelength);
 };
+
+#endif

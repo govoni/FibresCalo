@@ -8,26 +8,22 @@
 #include "globals.hh"
 #include <vector>
 
-#include "TFile.h"
-#include "TTree.h"
-#include "TString.h"
 
 
 class G4Event;
 
 class EventAction : public G4UserEventAction
 {
-  public:
-    EventAction();
-   ~EventAction();
-
-    void BeginOfEventAction(const G4Event*);
-    void EndOfEventAction(const G4Event*);
-    
-    int NtowersOnSide ;
+public:
+  EventAction(const G4int& modulo);
+  ~EventAction();
+  
+  void BeginOfEventAction(const G4Event*);
+  void EndOfEventAction(const G4Event*);
+  
+private:
+  G4int printModulo;
 };
 
 
 #endif
-
-    

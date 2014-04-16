@@ -19,7 +19,6 @@
 /vis/viewer/set/viewpointThetaPhi 270 0 deg 
 
 # Specify zoom value:
-#/vis/viewer/zoomTo 200
 /vis/viewer/zoomTo 2
 
 # Specify style (surface or wireframe):
@@ -44,11 +43,11 @@
 /vis/scene/add/hits
 #
 # To draw only gammas:
-#/vis/filtering/trajectories/create/particleFilter
+/vis/filtering/trajectories/create/particleFilter
 #/vis/filtering/trajectories/particleFilter-0/add pi-
-#/vis/filtering/trajectories/particleFilter-0/add e-
-#/vis/filtering/trajectories/particleFilter-0/add gamma
-#/vis/filtering/trajectories/particleFilter-0/add opticalphoton
+/vis/filtering/trajectories/particleFilter-0/add e-
+/vis/filtering/trajectories/particleFilter-0/add gamma
+/vis/filtering/trajectories/particleFilter-0/add opticalphoton
 #
 # To invert the above, drawing all particles except gammas,
 # keep the above two lines but also add:
@@ -75,20 +74,15 @@
 
 /units/list
 
-/gps/energy 0.5 GeV
+/gps/energy 1 GeV
 /gps/particle e-
-
 /gps/pos/type Plane
 /gps/pos/shape Square
-/gps/pos/halfx 1 mm
-/gps/pos/halfy 1 mm
+/gps/pos/halfx 3.0 mm
+/gps/pos/halfy 3.0 mm
 
-/gps/ang/type beam2d
-/gps/ang/focuspoint 0 0 -1.50 m
-/gps/ang/sigma_x 0.05 mrad
-/gps/ang/sigma_y 0.05 mrad
+# 3 degrees tilt
+/gps/direction 0.0523 0.0523 0.9986
 
-/gps/direction 0. 0. 1.
-
-#/tracking/verbose 1
-/run/beamOn 1
+/tracking/verbose 1
+#/run/beamOn 1

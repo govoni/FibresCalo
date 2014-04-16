@@ -1,6 +1,8 @@
 #include "MyMaterials.hh"
 #include "G4NistManager.hh"
 
+using namespace CLHEP;
+
 
 
 MyMaterials::MyMaterials()
@@ -25,30 +27,35 @@ G4Material* MyMaterials::Air()
   mat->AddElement(N, 70.*perCent);
   mat->AddElement(O, 30.*perCent);
   
-  const G4int nEntries = 34;
-  G4double PhotonEnergy[nEntries] =
-    { 0.0001*eV, 1.0000*eV, 2.0340*eV, 2.0680*eV,
-      2.1030*eV, 2.1390*eV, 2.1770*eV, 2.2160*eV,
-      2.2560*eV, 2.2980*eV, 2.3410*eV, 2.3860*eV,
-      2.4330*eV, 2.4810*eV, 2.5320*eV, 2.5850*eV,
-      2.6400*eV, 2.6970*eV, 2.7570*eV, 2.8200*eV,
-      2.8850*eV, 2.9540*eV, 3.0260*eV, 3.1020*eV,
-      3.1810*eV, 3.2650*eV, 3.3530*eV, 3.4460*eV,
-      3.5450*eV, 3.6490*eV, 3.7600*eV, 3.8770*eV,
-      4.0020*eV, 4.1360*eV };
-  G4double RefractiveIndex[nEntries] =
-    { 1.00, 1.00, 1.00, 1.00,
-      1.00, 1.00, 1.00, 1.00,
-      1.00, 1.00, 1.00, 1.00,
-      1.00, 1.00, 1.00, 1.00,
-      1.00, 1.00, 1.00, 1.00,
-      1.00, 1.00, 1.00, 1.00,
-      1.00, 1.00, 1.00, 1.00,
-      1.00, 1.00, 1.00, 1.00,
-      1.00, 1.00 };
+  const G4int nEntries_RI = 42;
+  G4double PhotonEnergy_RI[nEntries_RI] = 
+    { 0.1000*eV, 1.0000*eV, 1.0121*eV, 1.0332*eV, 
+      1.0552*eV, 1.0781*eV, 1.1021*eV, 1.1271*eV, 
+      1.1533*eV, 1.1808*eV, 1.2096*eV, 1.2398*eV, 
+      1.2716*eV, 1.3051*eV, 1.3404*eV, 1.3776*eV, 
+      1.4170*eV, 1.4586*eV, 1.5028*eV, 1.5498*eV, 
+      1.5998*eV, 1.6531*eV, 1.7101*eV, 1.7712*eV, 
+      1.8368*eV, 1.9074*eV, 1.9837*eV, 2.0664*eV, 
+      2.1562*eV, 2.2543*eV, 2.3616*eV, 2.4797*eV, 
+      2.6102*eV, 2.7552*eV, 2.9173*eV, 3.0996*eV, 
+      3.3062*eV, 3.5424*eV, 3.8149*eV, 4.1328*eV, 
+      4.5085*eV, 4.9594*eV };
+  
+  G4double RefractiveIndex[nEntries_RI] = 
+    { 1.0003, 1.0003, 1.0003, 1.0003, 
+      1.0003, 1.0003, 1.0003, 1.0003, 
+      1.0003, 1.0003, 1.0003, 1.0003, 
+      1.0003, 1.0003, 1.0003, 1.0003, 
+      1.0003, 1.0003, 1.0003, 1.0003, 
+      1.0003, 1.0003, 1.0003, 1.0003, 
+      1.0003, 1.0003, 1.0003, 1.0003, 
+      1.0003, 1.0003, 1.0003, 1.0003, 
+      1.0003, 1.0003, 1.0003, 1.0003, 
+      1.0003, 1.0003, 1.0003, 1.0003, 
+      1.0003, 1.0003 };
   
   G4MaterialPropertiesTable* myMPT = new G4MaterialPropertiesTable();
-  myMPT->AddProperty("RINDEX",PhotonEnergy,RefractiveIndex,nEntries);
+  myMPT->AddProperty("RINDEX",PhotonEnergy_RI,RefractiveIndex,nEntries_RI);
   
   mat->SetMaterialPropertiesTable(myMPT);
   
@@ -180,7 +187,7 @@ G4Material* MyMaterials::Silicon()
   
   const G4int nEntries = 4;
   G4double PhotonEnergy[nEntries] =
-    { 0.0001*eV, 1.0*eV, 1.84*eV, 4.08*eV };
+    { 0.0001*eV, 1.0*eV, 1.84*eV, 6.26*eV };
   G4double RefractiveIndex[nEntries] =
     { 4.0, 4.0, 4.0, 4.0 };
   G4double Absorption[nEntries] =
@@ -243,17 +250,34 @@ G4Material* MyMaterials::SiO2_Ce()
   G4Material* mat = new G4Material ("SiO2Ce", density = 2.65*g/cm3,2);
   mat->AddElement(Si,1);
   mat->AddElement(O,2);
-
-  const G4int nEntries_RI = 11;
-  G4double PhotonEnergy_RI[nEntries_RI] =
-    { 1.0 * eV, 2.0 * eV, 2.5 * eV, 3.0 * eV,
-      3.5 * eV, 4.0 * eV, 4.5 * eV, 5.0 * eV,
-      5.5 * eV, 6.0 * eV, 6.26 * eV };
-  G4double RefractiveIndex[nEntries_RI] =
-    { 1.53, 1.54, 1.55, 1.56,
-      1.56, 1.57, 1.59, 1.60,
-      1.62, 1.64, 1.65 };
-
+  
+  const G4int nEntries_RI = 42;
+  G4double PhotonEnergy_RI[nEntries_RI] = 
+    { 0.1000*eV, 1.0000*eV, 1.0121*eV, 1.0332*eV, 
+      1.0552*eV, 1.0781*eV, 1.1021*eV, 1.1271*eV, 
+      1.1533*eV, 1.1808*eV, 1.2096*eV, 1.2398*eV, 
+      1.2716*eV, 1.3051*eV, 1.3404*eV, 1.3776*eV, 
+      1.4170*eV, 1.4586*eV, 1.5028*eV, 1.5498*eV, 
+      1.5998*eV, 1.6531*eV, 1.7101*eV, 1.7712*eV, 
+      1.8368*eV, 1.9074*eV, 1.9837*eV, 2.0664*eV, 
+      2.1562*eV, 2.2543*eV, 2.3616*eV, 2.4797*eV, 
+      2.6102*eV, 2.7552*eV, 2.9173*eV, 3.0996*eV, 
+      3.3062*eV, 3.5424*eV, 3.8149*eV, 4.1328*eV, 
+      4.5085*eV, 4.9594*eV };
+  
+  G4double RefractiveIndex[nEntries_RI] = 
+    { 1.4476, 1.4476, 1.4478, 1.4481, 
+      1.4483, 1.4486, 1.4489, 1.4492, 
+      1.4495, 1.4498, 1.4501, 1.4504, 
+      1.4507, 1.4511, 1.4514, 1.4518, 
+      1.4521, 1.4525, 1.4529, 1.4533, 
+      1.4538, 1.4542, 1.4547, 1.4553, 
+      1.4559, 1.4565, 1.4572, 1.4580, 
+      1.4589, 1.4599, 1.4610, 1.4623, 
+      1.4638, 1.4656, 1.4676, 1.4701, 
+      1.4731, 1.4769, 1.4816, 1.4878, 
+      1.4960, 1.5074 };
+  
   const G4int nEntries_ABS = 4;
   G4double PhotonEnergy_ABS[nEntries_ABS] =
     { 1.0 * eV, 1.84 * eV, 4.08 * eV, 6.26 * eV };
@@ -274,7 +298,7 @@ G4Material* MyMaterials::SiO2_Ce()
   mt->AddConstProperty("FASTTIMECONSTANT",55.*ns);
   mt->AddConstProperty("YIELDRATIO",1.0);
   mt->AddConstProperty("FASTSCINTILLATIONRISETIME",0.5*ns);
-
+  
   mat->SetMaterialPropertiesTable(mt);
   return mat;
 }
@@ -294,11 +318,32 @@ G4Material* MyMaterials::YAG_Ce()
   mat->AddElement(Al,5);
   mat->AddElement(O,12);
   
-  const G4int nEntries_RI = 3;
-  G4double PhotonEnergy_RI[nEntries_RI] =
-    { 1.0*eV, 1.84*eV, 4.08*eV };
-  G4double RefractiveIndex[nEntries_RI] =
-    { 1.832, 1.832, 1.832 };
+  const G4int nEntries_RI = 42;
+  G4double PhotonEnergy_RI[nEntries_RI] = 
+    { 0.1000*eV, 1.0000*eV, 1.0121*eV, 1.0332*eV, 
+      1.0552*eV, 1.0781*eV, 1.1021*eV, 1.1271*eV, 
+      1.1533*eV, 1.1808*eV, 1.2096*eV, 1.2398*eV, 
+      1.2716*eV, 1.3051*eV, 1.3404*eV, 1.3776*eV, 
+      1.4170*eV, 1.4586*eV, 1.5028*eV, 1.5498*eV, 
+      1.5998*eV, 1.6531*eV, 1.7101*eV, 1.7712*eV, 
+      1.8368*eV, 1.9074*eV, 1.9837*eV, 2.0664*eV, 
+      2.1562*eV, 2.2543*eV, 2.3616*eV, 2.4797*eV, 
+      2.6102*eV, 2.7552*eV, 2.9173*eV, 3.0996*eV, 
+      3.3062*eV, 3.5424*eV, 3.8149*eV, 4.1328*eV, 
+      4.5085*eV, 4.9594*eV };
+  
+  G4double RefractiveIndex[nEntries_RI] = 
+    { 1.8116, 1.8116, 1.8118, 1.8122, 
+      1.8126, 1.8131, 1.8135, 1.8140, 
+      1.8144, 1.8149, 1.8154, 1.8160, 
+      1.8165, 1.8171, 1.8177, 1.8184, 
+      1.8191, 1.8198, 1.8206, 1.8214, 
+      1.8223, 1.8233, 1.8244, 1.8256, 
+      1.8269, 1.8284, 1.8300, 1.8318, 
+      1.8338, 1.8362, 1.8388, 1.8419, 
+      1.8455, 1.8497, 1.8548, 1.8608, 
+      1.8683, 1.8775, 1.8892, 1.9045, 
+      1.9249, 1.9532 };
   //G4double Rayleigh[nEntries_RI] =
   //  { 138.*mm, 138.*mm, 138.*mm };
   
@@ -399,7 +444,24 @@ G4Material* MyMaterials::Tungsten()
   return mat;
 }
 
+
+
+G4Material* MyMaterials::CopperTungstenAlloy(const G4double& WFrac)
+{
+  G4NistManager* man = G4NistManager::Instance();
+  G4Element* W = man->FindOrBuildElement("W");
+  G4Element* Cu = man->FindOrBuildElement("Cu");
   
+  G4double rho_Cu = 8.96;
+  G4double rho_W = 19.25;
+  G4double rho = (1.-WFrac)*rho_Cu + WFrac*rho_W;
+  G4Material* mat = new G4Material("CopperTungstenAlloy",rho*g/cm3,2);
+  mat->AddElement(Cu,1.-WFrac);
+  mat->AddElement(W,WFrac);
+  
+  return mat;
+}
+
 
 
 G4Material* MyMaterials::OpticalGrease()
@@ -414,7 +476,7 @@ G4Material* MyMaterials::OpticalGrease()
   mat->AddElement(H,1);
   mat->AddElement(O,1);
 
-  const G4int nEntries = 34;
+  const G4int nEntries = 35;
   G4double PhotonEnergy[nEntries] =
     { 0.0001*eV, 1.000*eV, 2.034*eV, 2.068*eV,
        2.103*eV, 2.139*eV, 2.177*eV, 2.216*eV,
@@ -424,7 +486,7 @@ G4Material* MyMaterials::OpticalGrease()
        2.885*eV, 2.954*eV, 3.026*eV, 3.102*eV,
        3.181*eV, 3.265*eV, 3.353*eV, 3.446*eV,
        3.545*eV, 3.649*eV, 3.760*eV, 3.877*eV,
-       4.002*eV, 4.136*eV };
+       4.002*eV, 4.136*eV, 6.260*eV };
   G4double RefractiveIndex[nEntries] =
     { 1.50, 1.50, 1.50, 1.50,
       1.50, 1.50, 1.50, 1.50,
@@ -434,7 +496,7 @@ G4Material* MyMaterials::OpticalGrease()
       1.50, 1.50, 1.50, 1.50,
       1.50, 1.50, 1.50, 1.50,
       1.50, 1.50, 1.50, 1.50,
-      1.50, 1.50 };
+      1.50, 1.50, 1.50 };
 
   
   G4MaterialPropertiesTable* myMPT = new G4MaterialPropertiesTable();
@@ -458,21 +520,44 @@ G4Material* MyMaterials::DSB_Ce()  // Nanostructured glass ceramics scintillator
   const G4int NUMENTRIES_1 = 5;
   G4double FAST_Energy[NUMENTRIES_1]    = {1.8*eV,1.90*eV,2.7*eV,2.88*eV,4.08*eV};
   G4double FAST_COMPONENT[NUMENTRIES_1] = {0.00,1.00,2.0,1.0,0.00};
-
-
-  const G4int NUMENTRIES_2 = 3;
-  G4double RIND_Energy[NUMENTRIES_2]    = { 1.0*eV, 1.84*eV, 4.08*eV };
-  G4double RIND_INDEX[NUMENTRIES_2]     = { 1.5, 1.5, 1.5 };
-  G4double ABS_Energy[NUMENTRIES_2]     = { 1.0*eV, 1.84*eV, 4.08*eV };
-  //G4double ABS_LENGTH[NUMENTRIES_2]     = { 50.*m, 50.*m, 50.*m};
-  G4double ABS_LENGTH[NUMENTRIES_2]       = { 500.*mm, 500.*mm, 500.*mm };	//138 original
-//   G4double Rayleigh[NUMENTRIES_2]       = { 138.*mm, 138.*mm, 138.*mm};
+  
+  const G4int nEntries_RI = 42;
+  G4double PhotonEnergy_RI[nEntries_RI] = 
+    { 0.1000*eV, 1.0000*eV, 1.0121*eV, 1.0332*eV, 
+      1.0552*eV, 1.0781*eV, 1.1021*eV, 1.1271*eV, 
+      1.1533*eV, 1.1808*eV, 1.2096*eV, 1.2398*eV, 
+      1.2716*eV, 1.3051*eV, 1.3404*eV, 1.3776*eV, 
+      1.4170*eV, 1.4586*eV, 1.5028*eV, 1.5498*eV, 
+      1.5998*eV, 1.6531*eV, 1.7101*eV, 1.7712*eV, 
+      1.8368*eV, 1.9074*eV, 1.9837*eV, 2.0664*eV, 
+      2.1562*eV, 2.2543*eV, 2.3616*eV, 2.4797*eV, 
+      2.6102*eV, 2.7552*eV, 2.9173*eV, 3.0996*eV, 
+      3.3062*eV, 3.5424*eV, 3.8149*eV, 4.1328*eV, 
+      4.5085*eV, 4.9594*eV };
+  
+  G4double RefractiveIndex[nEntries_RI] = 
+    { 1.4476, 1.4476, 1.4478, 1.4481, 
+      1.4483, 1.4486, 1.4489, 1.4492, 
+      1.4495, 1.4498, 1.4501, 1.4504, 
+      1.4507, 1.4511, 1.4514, 1.4518, 
+      1.4521, 1.4525, 1.4529, 1.4533, 
+      1.4538, 1.4542, 1.4547, 1.4553, 
+      1.4559, 1.4565, 1.4572, 1.4580, 
+      1.4589, 1.4599, 1.4610, 1.4623, 
+      1.4638, 1.4656, 1.4676, 1.4701, 
+      1.4731, 1.4769, 1.4816, 1.4878, 
+      1.4960, 1.5074 };
+  
+  const G4int NUMENTRIES_2 = 4;
+  G4double ABS_Energy[NUMENTRIES_2] = { 1.0*eV, 1.84*eV, 4.08*eV, 6.26*eV };
+  G4double ABS_LENGTH[NUMENTRIES_2] = { 500.*mm, 500.*mm, 500.*mm, 500.*mm }; //138 original
+  //G4double Rayleigh[NUMENTRIES_2]       = { 138.*mm, 138.*mm, 138.*mm};
 
   G4MaterialPropertiesTable* mt = new G4MaterialPropertiesTable();
   mt->AddProperty("FASTCOMPONENT", FAST_Energy, FAST_COMPONENT, NUMENTRIES_1);
-  mt->AddProperty("RINDEX",        RIND_Energy, RIND_INDEX,     NUMENTRIES_2);
+  mt->AddProperty("RINDEX",        PhotonEnergy_RI, RefractiveIndex, nEntries_RI);
   mt->AddProperty("ABSLENGTH",     ABS_Energy,  ABS_LENGTH,     NUMENTRIES_2);
-//   mt->AddProperty("RAYLEIGH",      ABS_Energy,  Rayleigh,     NUMENTRIES_2);
+  //mt->AddProperty("RAYLEIGH",      ABS_Energy,  Rayleigh,     NUMENTRIES_2);
 
   mt->AddConstProperty("SCINTILLATIONYIELD",1800/MeV);
   mt->AddConstProperty("RESOLUTIONSCALE",8.5);
@@ -594,11 +679,32 @@ G4Material* MyMaterials::LuAG_Ce() // Lutetium Aluminum Garnet - Ce-doped
       0.000193611, 0.000166442, 0.000154017, 0.000139056, 0.0001301, 0.00011928, 0.000122511, 0.000106704, 8.5411e-05, 8.49339e-05,
       8.20717e-05, 6.96905e-05, 6.09304e-05, 5.20402e-05, 5.76345e-05, 5.77646e-05, 4.39089e-05, 6.16243e-05 };
   
-  const G4int nEntries_RI = 3;
-  G4double PhotonEnergy_RI[nEntries_RI] =
-    { 1.0*eV, 1.84*eV, 4.08*eV };
-  G4double RefractiveIndex[nEntries_RI] =
-    { 1.842, 1.842, 1.842 };
+  const G4int nEntries_RI = 42;
+  G4double PhotonEnergy_RI[nEntries_RI] = 
+    { 0.1000*eV, 1.0000*eV, 1.0121*eV, 1.0332*eV, 
+      1.0552*eV, 1.0781*eV, 1.1021*eV, 1.1271*eV, 
+      1.1533*eV, 1.1808*eV, 1.2096*eV, 1.2398*eV, 
+      1.2716*eV, 1.3051*eV, 1.3404*eV, 1.3776*eV, 
+      1.4170*eV, 1.4586*eV, 1.5028*eV, 1.5498*eV, 
+      1.5998*eV, 1.6531*eV, 1.7101*eV, 1.7712*eV, 
+      1.8368*eV, 1.9074*eV, 1.9837*eV, 2.0664*eV, 
+      2.1562*eV, 2.2543*eV, 2.3616*eV, 2.4797*eV, 
+      2.6102*eV, 2.7552*eV, 2.9173*eV, 3.0996*eV, 
+      3.3062*eV, 3.5424*eV, 3.8149*eV, 4.1328*eV, 
+      4.5085*eV, 4.9594*eV };
+  
+  G4double RefractiveIndex[nEntries_RI] = 
+    { 1.8212, 1.8212, 1.8215, 1.8219, 
+      1.8223, 1.8227, 1.8231, 1.8236, 
+      1.8240, 1.8245, 1.8250, 1.8255, 
+      1.8261, 1.8266, 1.8272, 1.8279, 
+      1.8285, 1.8293, 1.8300, 1.8308, 
+      1.8317, 1.8327, 1.8338, 1.8349, 
+      1.8362, 1.8376, 1.8392, 1.8410, 
+      1.8430, 1.8453, 1.8479, 1.8509, 
+      1.8545, 1.8587, 1.8637, 1.8699, 
+      1.8774, 1.8869, 1.8991, 1.9152, 
+      1.9374, 1.9694 };
   //G4double Rayleigh[nEntries_RI] =
   //  { 138.*mm, 138.*mm, 138.*mm };
   
@@ -676,12 +782,33 @@ G4Material* MyMaterials::LuAG_Pr() // Lutetium Aluminum Garnet -
   G4double FastComponent[nEntries_FAST] =
     {0.00, 0.00, 1.00, 0.00,
      0.00, 1.00, 0.00, 0.00 }; 
- 
-  const G4int nEntries_RI = 3;
-  G4double PhotonEnergy_RI[nEntries_RI] =
-    { 1.0*eV, 1.84*eV, 4.08*eV };
-  G4double RefractiveIndex[nEntries_RI] =
-    { 1.842, 1.842, 1.842 };
+
+  const G4int nEntries_RI = 42;
+  G4double PhotonEnergy_RI[nEntries_RI] = 
+    { 0.1000*eV, 1.0000*eV, 1.0121*eV, 1.0332*eV, 
+      1.0552*eV, 1.0781*eV, 1.1021*eV, 1.1271*eV, 
+      1.1533*eV, 1.1808*eV, 1.2096*eV, 1.2398*eV, 
+      1.2716*eV, 1.3051*eV, 1.3404*eV, 1.3776*eV, 
+      1.4170*eV, 1.4586*eV, 1.5028*eV, 1.5498*eV, 
+      1.5998*eV, 1.6531*eV, 1.7101*eV, 1.7712*eV, 
+      1.8368*eV, 1.9074*eV, 1.9837*eV, 2.0664*eV, 
+      2.1562*eV, 2.2543*eV, 2.3616*eV, 2.4797*eV, 
+      2.6102*eV, 2.7552*eV, 2.9173*eV, 3.0996*eV, 
+      3.3062*eV, 3.5424*eV, 3.8149*eV, 4.1328*eV, 
+      4.5085*eV, 4.9594*eV };
+  
+  G4double RefractiveIndex[nEntries_RI] = 
+    { 1.8212, 1.8212, 1.8215, 1.8219, 
+      1.8223, 1.8227, 1.8231, 1.8236, 
+      1.8240, 1.8245, 1.8250, 1.8255, 
+      1.8261, 1.8266, 1.8272, 1.8279, 
+      1.8285, 1.8293, 1.8300, 1.8308, 
+      1.8317, 1.8327, 1.8338, 1.8349, 
+      1.8362, 1.8376, 1.8392, 1.8410, 
+      1.8430, 1.8453, 1.8479, 1.8509, 
+      1.8545, 1.8587, 1.8637, 1.8699, 
+      1.8774, 1.8869, 1.8991, 1.9152, 
+      1.9374, 1.9694 }; 
   //G4double Rayleigh[nEntries_RI] =
   //  { 138.*mm, 138.*mm, 138.*mm};
   
@@ -781,7 +908,7 @@ G4Material* MyMaterials::LYSO()
   
   const G4int nEntries_RI = 3;
   G4double PhotonEnergy_RI[nEntries_RI] =
-    { 1.0*eV, 1.84*eV, 4.08*eV };
+    { 1.0*eV, 1.84*eV, 6.26*eV };
   G4double RefractiveIndex[nEntries_RI] =
     { 1.82, 1.82, 1.82 };
   //G4double Rayleigh[nEntries_RI] =
@@ -883,7 +1010,7 @@ G4Material* MyMaterials::LYSO_lowLY()
   
   const G4int nEntries_RI = 3;
   G4double PhotonEnergy_RI[nEntries_RI] =
-    { 1.0*eV, 1.84*eV, 4.08*eV };
+    { 1.0*eV, 1.84*eV, 6.26*eV };
   G4double RefractiveIndex[nEntries_RI] =
     { 1.82, 1.82, 1.82 };
   //G4double Rayleigh[nEntries_RI]
@@ -972,7 +1099,7 @@ G4Material* MyMaterials::LSO()
   
   const G4int nEntries_RI = 4;
   G4double PhotonEnergy_RI[nEntries_RI] =
-    { 0.0001*eV, 1.0*eV, 1.84*eV, 4.08*eV };
+    { 0.0001*eV, 1.0*eV, 1.84*eV, 6.26*eV };
   G4double RefractiveIndex[nEntries_RI] =
     { 1.82, 1.82, 1.82, 1.82 };
   //G4double Rayleigh[nEntries_RI] =

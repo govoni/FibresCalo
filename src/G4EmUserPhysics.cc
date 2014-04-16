@@ -60,8 +60,10 @@
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-G4EmUserPhysics::G4EmUserPhysics(G4int ver)
-  : G4VPhysicsConstructor("User Optical Options"), verbose(ver)
+G4EmUserPhysics::G4EmUserPhysics(const G4int& scint, const G4int& cher) :
+  G4VPhysicsConstructor("User Optical Options"),
+  switchOnScintillation(scint),
+  switchOnCerenkov(cher)
 {
   G4LossTableManager::Instance();
 }
@@ -88,7 +90,7 @@ void G4EmUserPhysics::ConstructProcess()
   theRayleighScatteringProcess = new G4OpRayleigh();
   theMieHGScatteringProcess = new G4OpMieHG();
   theBoundaryProcess = new G4OpBoundaryProcess();
-
+  
   //theCerenkovProcess->DumpPhysicsTable();
   //theScintillationProcess->DumpPhysicsTable();
   //theRayleighScatteringProcess->DumpPhysicsTable();
@@ -104,34 +106,35 @@ void G4EmUserPhysics::ConstructProcess()
   G4EmSaturation* emSaturation = G4LossTableManager::Instance()->EmSaturation();
   theScintillationProcess->AddSaturation(emSaturation);
 
-  theParticleIterator->reset();
+  G4ParticleTable::G4PTblDicIterator* theParticleIterator = G4ParticleTable::GetParticleTable() -> GetIterator();
+  theParticleIterator -> reset();
   while( (*theParticleIterator)() )
   {
     G4ParticleDefinition* particle = theParticleIterator->value();
     G4ProcessManager* pmanager = particle->GetProcessManager();
     G4String particleName = particle->GetParticleName();
     
-    //if (theCerenkovProcess->IsApplicable(*particle))
-    //{
-    //  pmanager->AddProcess(theCerenkovProcess);
-    //  pmanager->SetProcessOrdering(theCerenkovProcess,idxPostStep);
-    //}
+    if( (switchOnScintillation) && (theScintillationProcess->IsApplicable(*particle)) )
+    {
+      pmanager->AddProcess(theScintillationProcess);
+      pmanager->SetProcessOrderingToLast(theScintillationProcess, idxAtRest);
+      pmanager->SetProcessOrderingToLast(theScintillationProcess, idxPostStep);
+    }
     
-    //if (theScintillationProcess->IsApplicable(*particle))
-    //{
-    //  pmanager->AddProcess(theScintillationProcess);
-    //  pmanager->SetProcessOrderingToLast(theScintillationProcess, idxAtRest);
-    //  pmanager->SetProcessOrderingToLast(theScintillationProcess, idxPostStep);
-    //}
+    if( (switchOnCerenkov) && (theCerenkovProcess->IsApplicable(*particle)) )
+    {
+      pmanager->AddProcess(theCerenkovProcess);
+      pmanager->SetProcessOrdering(theCerenkovProcess,idxPostStep);
+    }
     
-    //if (particleName == "opticalphoton")
-    //{
-    //  G4cout << " AddDiscreteProcess to OpticalPhoton " << G4endl;
-    //  pmanager->AddDiscreteProcess(theAbsorptionProcess);
-    //  pmanager->AddDiscreteProcess(theRayleighScatteringProcess);
-    //  pmanager->AddDiscreteProcess(theMieHGScatteringProcess);
-    //  pmanager->AddDiscreteProcess(theBoundaryProcess);
-    //}
+    if (particleName == "opticalphoton")
+    {
+      G4cout << " AddDiscreteProcess to OpticalPhoton " << G4endl;
+      pmanager->AddDiscreteProcess(theAbsorptionProcess);
+      pmanager->AddDiscreteProcess(theRayleighScatteringProcess);
+      pmanager->AddDiscreteProcess(theMieHGScatteringProcess);
+      pmanager->AddDiscreteProcess(theBoundaryProcess);
+    }
   }
 }
 
