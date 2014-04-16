@@ -58,7 +58,6 @@
 #include "G4EmStandardPhysics.hh"
 #include "G4VModularPhysicsList.hh"
 
-#include "LHEP.hh"
 #include "QGSP_BERT.hh"
 
 #include "PrimaryGeneratorAction.hh"
@@ -78,6 +77,8 @@
 #include "G4UIExecutive.hh"
 #endif
 
+using namespace CLHEP;
+
 
 
 long int CreateSeed();
@@ -86,7 +87,8 @@ long int CreateSeed();
 
 int main(int argc,char** argv)
 {
-  gInterpreter -> GenerateDictionary("vector<float>","vector");
+  //gInterpreter -> GenerateDictionary("vector<float>","vector");
+  //gInterpreter -> GenerateDictionary("map<int,vector<float> >","map,vector");
   
   
   if (argc != 3 && argc != 2)
@@ -133,8 +135,16 @@ int main(int argc,char** argv)
   G4cout << "Random seed : " << myseed << G4endl;
   CLHEP::HepRandom::setTheSeed(myseed);
   
-  float tower_side = config.read<float> ("tower_side") ;
-  CreateTree* mytree = new CreateTree ("tree", tower_side) ;
+  float module_xy = config.read<float> ("module_xy") ;
+  CreateTree* mytree = new CreateTree ("tree", module_xy) ;
+  
+  // Get runtime options
+  //
+  G4int printModulo = config.read<int> ("printModulo");
+  G4int switchOnScintillation = config.read<int> ("switchOnScintillation");
+  G4int switchOnCerenkov     = config.read<int> ("switchOnCerenkov");
+  G4int propagateScintillation = config.read<int> ("propagateScintillation");
+  G4int propagateCerenkov     = config.read<int> ("propagateCerenkov");
   
   // User Verbose output class
   //
@@ -163,7 +173,7 @@ int main(int argc,char** argv)
   
   if ( physName == "" || factory.IsReferencePhysList(physName))
   {
-//    physName = "FTFP_BERT";
+    //physName = "FTFP_BERT";
     physName = "FTFP_BERT_EMV"; // less precise, but supposed to be faster
                                 // it might be the one used by CMS
   }
@@ -176,7 +186,7 @@ int main(int argc,char** argv)
   
   G4cout << ">>> Define physics list::begin <<<" << G4endl; 
   G4VModularPhysicsList* physics = factory.GetReferencePhysList(physName);
-  physics->RegisterPhysics(new G4EmUserPhysics(0));
+  physics->RegisterPhysics(new G4EmUserPhysics(switchOnScintillation,switchOnCerenkov));
   runManager-> SetUserInitialization(physics);
   G4cout << ">>> Define physics list::end <<<" << G4endl; 
   
@@ -207,7 +217,7 @@ int main(int argc,char** argv)
   G4cout << ">>> Define RunAction::end <<<" << G4endl; 
   
   G4cout << ">>> Define EventAction::begin <<<" << G4endl; 
-  G4UserEventAction* event_action = new EventAction;
+  G4UserEventAction* event_action = new EventAction(printModulo);
   runManager->SetUserAction(event_action);
   G4cout << ">>> Define EventAction::end <<<" << G4endl; 
   
@@ -217,7 +227,7 @@ int main(int argc,char** argv)
   G4cout << ">>> Define TrackingAction::end <<<" << G4endl;
   
   G4cout << ">>> Define SteppingAction::begin <<<" << G4endl; 
-  SteppingAction* stepping_action = new SteppingAction;
+  SteppingAction* stepping_action = new SteppingAction(detector,propagateScintillation,propagateCerenkov);
   runManager->SetUserAction(stepping_action); 
   G4cout << ">>> Define SteppingAction::end <<<" << G4endl;
   
@@ -279,34 +289,32 @@ int main(int argc,char** argv)
 long int CreateSeed()
 {
   TRandom3 rangen;
-  long int s = time(0);
-  cout<<"Time : "<<s<<endl;
-  s+=getpid();
-  cout<<"PID  : "<<getpid()<<endl;
   
-  FILE * fp = fopen ("/proc/uptime", "r");
-  int uptime,upsecs;
-  if (fp != NULL)
+  long int sec = time(0);
+  G4cout << "Time : " << sec << G4endl;
+  
+  sec += getpid();
+  G4cout << "PID  : " << getpid() << G4endl;
+  
+  FILE* fp = fopen ("/proc/uptime", "r");
+  int upsecs = 0;
+  if( fp != NULL )
   {
     char buf[BUFSIZ];
-    int res;
-    char *b = fgets (buf, BUFSIZ, fp);
-    if (b == buf)
+    char *b = fgets(buf,BUFSIZ,fp);
+    if( b == buf )
     {
       /* The following sscanf must use the C locale.  */
-      setlocale (LC_NUMERIC, "C");
-      res = sscanf (buf, "%i", &upsecs);
-      setlocale (LC_NUMERIC, "");
-      if (res == 1) uptime = (time_t) upsecs;
+      setlocale(LC_NUMERIC, "C");
+      setlocale(LC_NUMERIC, "");
     }
-    fclose (fp);
+    fclose(fp);
   }
+  G4cout << "Upsecs: " << upsecs << G4endl;
+  sec += upsecs;
   
-  cout<<"Uptime: "<<upsecs<<endl;
-  s+=upsecs;
-  
-  cout<<"Seed for srand: "<<s<<endl;
-  srand(s);
+  G4cout << "Seed for srand: " << sec << G4endl;
+  srand(sec);
   rangen.SetSeed(rand());
   long int seed = round(1000000*rangen.Uniform());
   return seed;

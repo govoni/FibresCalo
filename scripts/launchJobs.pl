@@ -3,6 +3,8 @@ use Cwd;
 
 
 
+$WFRAC = $ARGV[2];
+
 open(USERCONFIG,$ARGV[0]);
 while(<USERCONFIG>)
 {
@@ -24,11 +26,12 @@ $ISLxplus   = $User_Preferences{"ISLxplus"};
 $ISHercules = $User_Preferences{"ISHercules"};
 $QUEUE      = $User_Preferences{"QUEUE"};
 
-$ABSMAT  = $User_Preferences{"ABSMAT"};
-$FIBMAT  = $User_Preferences{"FIBMAT"};
-$FIBRAD  = $User_Preferences{"FIBRAD"};
-$FIBDIST = $User_Preferences{"FIBDIST"};
-$label2 = "absMat".$ABSMAT."_fibMat".$FIBMAT."_fibRad".$FIBRAD."_fibDist".$FIBDIST;
+$ABSMAT     = $User_Preferences{"ABSMAT"};
+$FIBMAT     = $User_Preferences{"FIBMAT"};
+$FIBRAD     = $User_Preferences{"FIBRAD"};
+$FIBDIST    = $User_Preferences{"FIBDIST"};
+$FIBLENGTH  = $User_Preferences{"FIBLENGTH"};
+$label2 = "absMat".$ABSMAT."-".$WFRAC."_fibMat".$FIBMAT."_fibRad".$FIBRAD."_fibDist".$FIBDIST;
 
 
 
@@ -142,9 +145,11 @@ while(<LIST>)
     
     $jobCfg = $jobDir."/job.cfg";
     system("cat ".$TEMPLATECfg."   | sed -e s%ABSMAT%".$ABSMAT.
+                               "%g | sed -e s%WFRAC%".$WFRAC.
                                "%g | sed -e s%FIBMAT%".$FIBMAT.
                                "%g | sed -e s%FIBRAD%".$FIBRAD.
                                "%g | sed -e s%FIBDIST%".$FIBDIST.
+                               "%g | sed -e s%FIBLENGTH%".$FIBLENGTH.
                                "%g | sed -e s%GPS%".$jobGpsMac.
                                "%g > ".$jobCfg);
     
@@ -158,8 +163,8 @@ while(<LIST>)
     
     if( $ISLxplus )
     {
-      print JOBSH "source /afs/cern.ch/sw/lcg/external/gcc/4.6/x86_64-slc6-gcc46-opt/setup.sh\n";
-      print JOBSH ". /afs/cern.ch/sw/lcg/external/geant4/9.6.p02/x86_64-slc6-gcc46-opt/GNUmake-setup.sh\n";
+      print JOBSH "source /afs/cern.ch/sw/lcg/external/gcc/4.7/x86_64-slc6-gcc47-opt/setup.sh\n";
+      print JOBSH ". /afs/cern.ch/sw/lcg/external/geant4/10.0.p01/x86_64-slc6-gcc47-opt/CMake-setup.sh\n";
       print JOBSH "touch ".$jobDir."/job.run\n";
       print JOBSH "unbuffer ".$EXEName." ".$jobDir."job.cfg out_".$iJob."\n";
       print JOBSH "cmsStage -f out_".$iJob.".root ".$STAGEOUTDir."\n";
