@@ -1,4 +1,5 @@
 use Env;
+use Cwd;
 
 
 
@@ -13,12 +14,49 @@ while(<USERCONFIG>)
   $User_Preferences{$var} = $value;
 }
 
-$OUTPUTDir = $User_Preferences{"OUTPUTDir"};
+$LISTFile    = $User_Preferences{"LISTFile"};
+$OUTPUTDir   = $User_Preferences{"OUTPUTDir"};
+
+$ISLxplus   = $User_Preferences{"ISLxplus"};
+$ISHercules = $User_Preferences{"ISHercules"};
+
+$ABSMAT     = $User_Preferences{"ABSMAT"};
+$WFRAC      = $User_Preferences{"WFRAC"};
+$FIBMAT     = $User_Preferences{"FIBMAT"};
+$FIBRAD     = $User_Preferences{"FIBRAD"};
+$FIBDIST    = $User_Preferences{"FIBDIST"};
+$FIBLENGTH  = $User_Preferences{"FIBLENGTH"};
+
+if( $WFRAC == -1 )
+{
+    $WFRAC = $ARGV[2];
+}
+
+$label2 = "absMat".$ABSMAT."-".$WFRAC."_fibMat".$FIBMAT."_fibRad".$FIBRAD."_fibDist".$FIBDIST;
 
 
 
-open(LIST,"./list_FNAL14.txt");
-#open(LIST,"./list_Full_Lisbon.txt");
+$CURRENTDir = getcwd();
+
+$OUTPUTDir = $OUTPUTDir."/".$label2;
+
+$OUTPUTJobDir = "";
+if( $ISLxplus )
+{
+    $OUTPUTJobDir = $CURRENTDir."/jobs/".$label2;
+  if( ! -e $OUTPUTJobDir )
+  {
+      system("mkdir ".$OUTPUTJobDir);
+  }
+}
+if( $ISHercules )
+{
+    $OUTPUTJobDir = $OUTPUTDir;
+}
+
+
+
+open(LIST,$LISTFile);
 while(<LIST>)
 {
   chomp;
@@ -26,21 +64,18 @@ while(<LIST>)
   s/^\s+//;               # no leading white
   s/\s+$//;               # no trailing white
   
-  ($label,$particle,$energy,$preL,$Nevts,$Njobs,$Nfirst) = split(" ");
-  
+  ($label,$particle,$energy,$Nevts,$Njobs,$Nfirst) = split(" ");
+
   if( $label eq "" )
   {
-    next;
+      next;
   }
-  
-  if( $preL > 0. )
-  {
-    $label = $label."_preshower".$preL."mm";
-  }
-  print($label." ".$particle," ".$energy." ".$preL." ".$Nevts." ".$Njobs." ".$Nfirst."\n");
+
+  print($label."_".$label2." ".$particle," ".$energy." ".$Nevts." ".$Njobs." ".$Nfirst."\n");
   
   
-  $runDir = $OUTPUTDir."/run_".$label."/";
+  
+  $runDir = $OUTPUTJobDir."/run_".$label."/";
   $command = "hadd -f ".$runDir."/out.root ";
   
   for($iJob = $Nfirst; $iJob < $Nfirst+$Njobs; ++$iJob)

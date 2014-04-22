@@ -135,8 +135,7 @@ int main(int argc,char** argv)
   G4cout << "Random seed : " << myseed << G4endl;
   CLHEP::HepRandom::setTheSeed(myseed);
   
-  float module_xy = config.read<float> ("module_xy") ;
-  CreateTree* mytree = new CreateTree ("tree", module_xy) ;
+  CreateTree* mytree = new CreateTree ("tree") ;
   
   // Get runtime options
   //

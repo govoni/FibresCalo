@@ -137,6 +137,8 @@ void SteppingAction::UserSteppingAction (const G4Step * theStep)
       CreateTree::Instance()->h_phot_cer_gap_lambda -> Fill( MyMaterials::fromEvToNm(theTrack->GetTotalEnergy()/eV) );
       CreateTree::Instance()->h_phot_cer_gap_E      -> Fill( theTrack->GetTotalEnergy()/eV );
       CreateTree::Instance()->h_phot_cer_gap_time   -> Fill( thePrePoint->GetGlobalTime()/picosecond );
+      
+      theTrack->SetTrackStatus(fKillTrackAndSecondaries);
     }
     
     if( (theTrack->GetLogicalVolumeAtVertex()->GetName().contains("fibre")) && (processName == "Cerenkov") &&
@@ -183,13 +185,13 @@ void SteppingAction::UserSteppingAction (const G4Step * theStep)
     {
       CreateTree::Instance ()->depositedEnergyFibres += energy/GeV;
       
-      std::vector<float> depAtt;
+      std::map<int,float> depAtt;
       for(unsigned int it = 0; it < CreateTree::Instance()->attLengths.size(); ++it)
       {
         float attLength = CreateTree::Instance()->attLengths.at(it);
         
         CreateTree::Instance()->depositedEnergyFibresAtt->at(it) += energy/GeV*exp(-1.*(module_z-local_z)/attLength);
-        depAtt.push_back( energy/GeV*exp(-1.*(module_z-local_z)/attLength) );
+        depAtt[attLength] = ( energy/GeV*exp(-1.*(module_z-local_z)/attLength) );
       }
       
       string fibreName (thePrePVName.data ()) ;

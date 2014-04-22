@@ -3,8 +3,6 @@ use Cwd;
 
 
 
-$WFRAC = $ARGV[2];
-
 open(USERCONFIG,$ARGV[0]);
 while(<USERCONFIG>)
 {
@@ -27,15 +25,23 @@ $ISHercules = $User_Preferences{"ISHercules"};
 $QUEUE      = $User_Preferences{"QUEUE"};
 
 $ABSMAT     = $User_Preferences{"ABSMAT"};
+$WFRAC      = $User_Preferences{"WFRAC"};
 $FIBMAT     = $User_Preferences{"FIBMAT"};
 $FIBRAD     = $User_Preferences{"FIBRAD"};
 $FIBDIST    = $User_Preferences{"FIBDIST"};
 $FIBLENGTH  = $User_Preferences{"FIBLENGTH"};
+
+if( $WFRAC == -1 )
+{
+  $WFRAC = $ARGV[2];
+}
+
 $label2 = "absMat".$ABSMAT."-".$WFRAC."_fibMat".$FIBMAT."_fibRad".$FIBRAD."_fibDist".$FIBDIST;
 
 
 
 open(LANCIA,">","lancia.sh") or die "Can't open file lancia.sh";
+print LANCIA "#! /bin/zsh \n";
 
 
 
@@ -184,7 +190,7 @@ while(<LIST>)
     
     if( $ISHercules == 1 )
     {
-      print LANCIA "qsub -d ".$jobDir." -q ".$QUEUE." ".$jobSh."\n";
+      print LANCIA "qsub -V -d ".$jobDir." -q ".$QUEUE." ".$jobSh."\n";
     }
     if( $ISLxplus == 1 )
     {

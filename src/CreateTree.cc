@@ -9,7 +9,7 @@ CreateTree* CreateTree::fInstance = NULL ;
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 
 
-CreateTree::CreateTree (TString name, float tower_side)
+CreateTree::CreateTree (TString name)
 {
   if ( fInstance )
   {
@@ -95,7 +95,7 @@ CreateTree::~CreateTree ()
 
 
 void
-CreateTree::AddEnergyDeposit (int index, float deposit, std::vector<float> depositAtt)
+CreateTree::AddEnergyDeposit (int index, float deposit, std::map<int,float>& depositAtt)
 {
   // find if it exists already
   vector<int>::const_iterator where = find (depositFibres->begin (), 
@@ -104,14 +104,14 @@ CreateTree::AddEnergyDeposit (int index, float deposit, std::vector<float> depos
     {
       depositFibres->push_back (index) ;
       depositedEnergies->push_back (deposit) ;
-      for(unsigned int it = 0; it < depositAtt.size(); ++it)
-        ((*depositedEnergiesAtt)[it]).push_back (depositAtt.at(it)) ;
+      for(std::map<int,float>::const_iterator it = depositAtt.begin(); it != depositAtt.end(); ++it)
+        ((*depositedEnergiesAtt)[it->first]).push_back( (depositAtt[it->first]) ) ;
     }   
   else
     {
       depositedEnergies->at (where - depositFibres->begin ()) += deposit ;
-      for(unsigned int it = 0; it < depositAtt.size(); ++it)
-        ((*depositedEnergiesAtt)[it]).at (where - depositFibres->begin ()) += depositAtt.at(it) ;
+      for(std::map<int,float>::const_iterator it = depositAtt.begin(); it != depositAtt.end(); ++it)
+        ((*depositedEnergiesAtt)[it->first]).at (where - depositFibres->begin ()) += depositAtt[it->first] ;
     }
   return ;
 }

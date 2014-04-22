@@ -22,12 +22,12 @@ private:
   
 public:
   
-  CreateTree (TString name, float tower_side) ;
+  CreateTree (TString name) ;
   ~CreateTree () ;
   
   TTree*             GetTree  () const { return ftree ; } ;
   TString            GetName  () const { return fname ; } ;
-  void               AddEnergyDeposit (int index, float deposit, std::vector<float> depositAtt) ;
+  void               AddEnergyDeposit (int index, float deposit, std::map<int,float>& depositAtt) ;
   void               AddScintillationPhoton (int index) ;
   void               AddCerenkovPhoton (int index) ;
   int                Fill     () ;
