@@ -14,6 +14,7 @@
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TProfile.h"
+#include "TRandom3.h"
 
 
 
@@ -24,7 +25,10 @@ float fibRad = 0.4;
 float fibDist = 1.2;
 
 std::string extraLabel = "_25X0";
-std::string stageoutFolder = "/store/user/abenagli/FibresCalo/Apr11_3degTilt" + extraLabel + "/";
+std::string stageoutFolder = "/store/user/abenagli/FibresCalo/Apr22_3degTilt" + extraLabel + "/";
+
+float LY = 1000;
+float eff = 0.01;
 
 
 
@@ -45,11 +49,31 @@ int main(int argc, char** argv)
   
   std::vector<int> energies;
   energies.push_back(1);
-  //energies.push_back(10);
-  //energies.push_back(30);
-  //energies.push_back(50);
-  //energies.push_back(100);
-  //energies.push_back(300);
+  energies.push_back(10);
+  energies.push_back(30);
+  energies.push_back(50);
+  energies.push_back(100);
+  energies.push_back(300);
+  
+  std::vector<int> attLengths;
+  attLengths.push_back(50.);
+  attLengths.push_back(100.);
+  attLengths.push_back(150.);
+  attLengths.push_back(200.);
+  attLengths.push_back(250.);
+  attLengths.push_back(300.);
+  attLengths.push_back(350.);
+  attLengths.push_back(400.);
+  attLengths.push_back(450.);
+  attLengths.push_back(500.);
+  attLengths.push_back(550.);
+  attLengths.push_back(600.);
+  attLengths.push_back(700.);
+  attLengths.push_back(800.);
+  attLengths.push_back(1000.);
+  attLengths.push_back(2000.);
+  
+  TRandom3 r;
   
   
   
@@ -58,6 +82,10 @@ int main(int argc, char** argv)
   
   std::map<int,TH1F*> map_E_fibres;
   std::map<int,TH1F*> map_E_fibres_absorber;
+  
+  std::map<int,TH1F*> map_Npe_fibres;
+  std::map<int,TH1F*> map_NpeSmear_fibres;
+  std::map<int,std::map<int,TH1F*> > map_NpeSmearAtt_fibres;
   
   std::map<int,TH1F*> h_r_M;
   std::map<int,TH1F*> h_X_0;
@@ -89,6 +117,8 @@ int main(int argc, char** argv)
     // define branches
     float depositedEnergyFibres;
     float depositedEnergyAbsorber;
+    std::vector<float>* depositedEnergies = new std::vector<float>;
+    std::map<int,std::vector<float> >* depositedEnergiesAtt = new std::map<int,std::vector<float> >;
     float Radial_stepLength;
     float Longitudinal_stepLength;
     float Radial_ion_energy_absorber[5000];
@@ -103,6 +133,8 @@ int main(int argc, char** argv)
     
     tree -> SetBranchStatus("depositedEnergyFibres",           1); tree -> SetBranchAddress("depositedEnergyFibres",           &depositedEnergyFibres);
     tree -> SetBranchStatus("depositedEnergyAbsorber",         1); tree -> SetBranchAddress("depositedEnergyAbsorber",         &depositedEnergyAbsorber);
+    tree -> SetBranchStatus("depositedEnergies",               1); tree -> SetBranchAddress("depositedEnergies",               &depositedEnergies);
+    tree -> SetBranchStatus("depositedEnergiesAtt",            1); tree -> SetBranchAddress("depositedEnergiesAtt",            &depositedEnergiesAtt);
     tree -> SetBranchStatus("Radial_stepLength",               1); tree -> SetBranchAddress("Radial_stepLength",               &Radial_stepLength);
     tree -> SetBranchStatus("Longitudinal_stepLength",         1); tree -> SetBranchAddress("Longitudinal_stepLength",         &Longitudinal_stepLength);   
     tree -> SetBranchStatus("Radial_ion_energy_absorber",      1); tree -> SetBranchAddress("Radial_ion_energy_absorber",       Radial_ion_energy_absorber);
@@ -116,11 +148,25 @@ int main(int argc, char** argv)
     //------------------
     // define histograms
     
-    map_E_fibres[energy] = new TH1F(Form("h_E_fibres_%02dGeV",energy),"",5000,0.,energy);
+    map_E_fibres[energy] = new TH1F(Form("h_E_fibres_%02dGeV",energy),"",50000,0.,energy);
     map_E_fibres[energy] -> Sumw2();
     
-    map_E_fibres_absorber[energy] = new TH1F(Form("h_E_fibres_absorber_%02dGeV",energy),"",5000,0.,energy);
+    map_E_fibres_absorber[energy] = new TH1F(Form("h_E_fibres_absorber_%02dGeV",energy),"",50000,0.,energy);
     map_E_fibres_absorber[energy] -> Sumw2();
+    
+    map_Npe_fibres[energy] = new TH1F(Form("h_Npe_fibres_%02dGeV",energy),"",50000,0.,energy*LY*1000*eff);
+    map_Npe_fibres[energy] -> Sumw2();
+    
+    map_NpeSmear_fibres[energy] = new TH1F(Form("h_NpeSmear_fibres_%02dGeV",energy),"",50000,0.,energy*LY*1000*eff);
+    map_NpeSmear_fibres[energy] -> Sumw2();
+    
+    for(unsigned int attLengthIt = 0; attLengthIt < attLengths.size(); ++attLengthIt)
+    {
+      int attLength = attLengths.at(attLengthIt);
+      
+      (map_NpeSmearAtt_fibres[energy])[attLength] = new TH1F(Form("h_NpeSmearAttLength%04dmm_fibres_%02dGeV",attLength,energy),"",50000,0.,energy*LY*1000*eff);
+      (map_NpeSmearAtt_fibres[energy])[attLength] -> Sumw2();
+    }
     
     h_r_M[energy] = new TH1F(Form("h_r_M_%dGeV",energy),"",5000,0.,1000.);
     h_r_M[energy] -> Sumw2();
@@ -180,8 +226,35 @@ int main(int argc, char** argv)
       
       //----------------
       // fill histograms
-      map_E_fibres[energy]          -> Fill( depositedEnergyFibres );
-      map_E_fibres_absorber[energy] -> Fill( depositedEnergyFibres+depositedEnergyAbsorber );
+      float sumFibres = 0.;
+      float sumFibresNpe = 0.;
+      float sumFibresNpeSmear = 0.;
+      std::map<int,float> sumFibresNpeSmearAtt;
+      for(unsigned int it = 0; it < depositedEnergies->size(); ++it)
+      {
+        
+        sumFibres += depositedEnergies->at(it);
+        sumFibresNpe += depositedEnergies->at(it)*LY*1000*eff;
+        sumFibresNpeSmear += r.Poisson(depositedEnergies->at(it)*LY*1000*eff);
+        for(unsigned int attLengthIt = 0; attLengthIt < attLengths.size(); ++attLengthIt)
+        {
+          float attLength = attLengths.at(attLengthIt);
+          sumFibresNpeSmearAtt[attLength] += r.Poisson((*depositedEnergiesAtt)[attLength].at(it)*LY*1000*eff);
+        }
+      }
+      
+      if( (sumFibres-depositedEnergyFibres)/depositedEnergyFibres > 0.001 )
+        std::cout << "!!! sum: " << sumFibres << "   depositedEnergyFibres: " << depositedEnergyFibres << std::endl;
+      
+      map_E_fibres[energy]           -> Fill( depositedEnergyFibres );
+      map_E_fibres_absorber[energy]  -> Fill( depositedEnergyFibres+depositedEnergyAbsorber );
+      map_Npe_fibres[energy]         -> Fill( sumFibresNpe );
+      map_NpeSmear_fibres[energy]    -> Fill( sumFibresNpeSmear );
+      for(unsigned int attLengthIt = 0; attLengthIt < attLengths.size(); ++attLengthIt)
+      {
+        float attLength = attLengths.at(attLengthIt);
+        (map_NpeSmearAtt_fibres[energy])[attLength] -> Fill( sumFibresNpeSmearAtt[attLength] );
+      }
     }
   }
   
@@ -198,8 +271,15 @@ int main(int argc, char** argv)
     outFile -> mkdir(Form("%dGeV",energy));
     outFile -> cd(Form("%dGeV",energy));
     
-    map_E_fibres[energy]          -> Write();
-    map_E_fibres_absorber[energy] -> Write();
+    map_E_fibres[energy]           -> Write();
+    map_E_fibres_absorber[energy]  -> Write();
+    map_Npe_fibres[energy]         -> Write();
+    map_NpeSmear_fibres[energy]    -> Write();
+    for(unsigned int attLengthIt = 0; attLengthIt < attLengths.size(); ++attLengthIt)
+    {
+      float attLength = attLengths.at(attLengthIt);
+      (map_NpeSmearAtt_fibres[energy])[attLength] -> Write();
+    }
     
     h_r_M[energy] -> Write();
     h_X_0[energy] -> Write();
