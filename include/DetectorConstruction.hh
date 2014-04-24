@@ -78,7 +78,7 @@ public:
   void initializeMaterials () ;
   void ConstructField () ;
   
-  Fiber GetFiber() { return fib ; } ;
+  Fiber* GetFiber() { return &fib ; } ;
   
   
 private:

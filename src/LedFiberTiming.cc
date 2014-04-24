@@ -4,7 +4,7 @@ double cLight = 2.99792458e-1;   // speed of light in vacuum [mm/ps]
 
 
 
-Fiber FiberInit(const double& length, const double& radius, const double& att,
+Fiber FiberInit(const double& length, const double& radius, const std::vector<double>& att,
                 const std::vector<std::pair<double,double> >& rIndVecCore,
                 const std::vector<std::pair<double,double> >& rIndVecClad,
                 const std::vector<std::pair<double,double> >& rIndVecAir,
@@ -72,15 +72,23 @@ double fresnelReflection(const double& th, const double& R)
 
 
 
-Travel GetTimeAndProbability(Photon& ph, const Fiber* fib, const double& prodTime)
+std::map<int,Travel> GetTimeAndProbability(Photon& ph, const Fiber* fib, const double& prodTime)
 {
-  Travel result;
-  for(int i = 0; i < 10; ++i)
+  std::map<int,Travel> result;
+  for(unsigned int it = 0; it < fib->attenuation.size(); ++it)
   {
-    result.prob[i] =  0.;
-    result.time[i] = -1.;
+    int att = int( fib->attenuation.at(it) );
+    
+    Travel dummy;
+    for(int i = 0; i < 10; ++i)
+    {
+      dummy.prob[i] =  0.;
+      dummy.time[i] = -1.;
+    }
+    dummy.nmax = 3;
+    
+    result[att] = dummy;
   }
-  result.nmax = 5;
   
   double cosTheta = fib->direction * ph.direction;
   double theta = acos(cosTheta);
@@ -133,11 +141,21 @@ Travel GetTimeAndProbability(Photon& ph, const Fiber* fib, const double& prodTim
     probReflections *= probReflectFace;
   }
   
-  for(int i = 0; i < result.nmax; ++i)
+  for(int i = 0; i < 3; ++i)
   {    
     double length = relDistance * fib->lengthTotal / fabs(cosTheta);
-    result.time[i] = prodTime + length / cLight * refrIndCore;
-    result.prob[i] =  exp( -1. * length / fib->attenuation ) * probReflections * (1.-probReflectRear);
+    double time = prodTime + length / cLight * refrIndCore;
+    double prob = probReflections * (1.-probReflectRear);
+    
+    for(unsigned int it = 0; it < fib->attenuation.size(); ++it)
+    {
+      int att = int( fib->attenuation.at(it) );
+      result[att].time[i] = time;
+      result[att].prob[i] =  exp( -1. * length / att ) * prob;
+    }
+    
+    //result.time[i] = prodTime + length / cLight * refrIndCore;
+    //result.prob[i] =  exp( -1. * length / fib->attenuation ) * probReflections * (1.-probReflectRear);
     
     //if( fabs(ph.position.y()) > 100 )
     //std::cout << "result.prob[" << i << "]: " << result.prob[i] << "   y: " << ph.position.y() << "   py: " << ph.direction.y() << "   dist: " << ph.dist << "   relDistance: " << relDistance << "   length: " << length/10. << "  exp( -length / fib->attenuation ): " <<  exp( -length / fib->attenuation ) << "   probReflections: " << probReflections << "   (1.-probReflectRear): " << (1.-probReflectRear) << std::endl;  

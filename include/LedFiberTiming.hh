@@ -2,6 +2,8 @@
 #define LedFiberTiming_H
 
 #include <iostream>
+#include <vector>
+#include <map>
 #include <cmath>
 
 #include "TVector3.h"
@@ -14,7 +16,7 @@ struct Fiber{
   std::vector<std::pair<double,double> > refrIndsClad;
   std::vector<std::pair<double,double> > refrIndsAir;
   std::vector<std::pair<double,double> > refrIndsGap;
-  double   attenuation;
+  std::vector<double>   attenuation;
   TVector3 position; 
   TVector3 direction;
   double   radius;
@@ -33,7 +35,7 @@ struct Travel{
   double   time[10];
 };
 
-Fiber FiberInit(const double& length, const double& radius, const double& att,
+Fiber FiberInit(const double& length, const double& radius, const std::vector<double>& att,
                 const std::vector<std::pair<double,double> >& rIndVecCore,
                 const std::vector<std::pair<double,double> >& rIndVecClad,
                 const std::vector<std::pair<double,double> >& rIndVecAir,
@@ -43,6 +45,6 @@ double FindRefrInd(const double& phE, const std::vector<std::pair<double,double>
 
 double fresnelReflection(const double& th, const double& R);
 
-Travel GetTimeAndProbability(Photon& ph, const Fiber* fib, const double& prodTime);
+std::map<int,Travel> GetTimeAndProbability(Photon& ph, const Fiber* fib, const double& prodTime);
 
 #endif

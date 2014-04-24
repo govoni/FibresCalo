@@ -135,7 +135,9 @@ int main(int argc,char** argv)
   G4cout << "Random seed : " << myseed << G4endl;
   CLHEP::HepRandom::setTheSeed(myseed);
   
-  CreateTree* mytree = new CreateTree ("tree") ;
+  std::vector<double> attLengths;
+  config.readIntoVect(attLengths, "attLengths");
+  CreateTree* mytree = new CreateTree ("tree",attLengths) ;
   
   // Get runtime options
   //

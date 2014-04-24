@@ -9,7 +9,8 @@ CreateTree* CreateTree::fInstance = NULL ;
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 
 
-CreateTree::CreateTree (TString name)
+CreateTree::CreateTree (TString name,
+                        const std::vector<double>& attL)
 {
   if ( fInstance )
   {
@@ -19,6 +20,8 @@ CreateTree::CreateTree (TString name)
   this->fInstance = this ;
   this->fname     = name ;
   this->ftree     = new TTree (name,name) ;
+  
+  this->attLengths = attL;
   
   this->GetTree ()->Branch ("Event", &this->Event, "Event/I") ;
   
@@ -45,9 +48,11 @@ CreateTree::CreateTree (TString name)
   this->GetTree ()->Branch ("depositedEnergyWorld",     &this->depositedEnergyWorld,       "depositedEnergyWorld/F") ;
   this->GetTree ()->Branch ("depositedEnergyFibresAtt", "vector<float>",&depositedEnergyFibresAtt);
   
-  this->GetTree ()->Branch ("tot_phot_cer",     &this->tot_phot_cer,         "tot_phot_cer/I") ;
-  this->GetTree ()->Branch ("tot_gap_phot_cer", &this->tot_gap_phot_cer, "tot_gap_phot_cer/I") ;
-  this->GetTree ()->Branch ("tot_det_phot_cer", &this->tot_det_phot_cer, "tot_det_phot_cer/I") ;
+  this->GetTree ()->Branch ("tot_phot_cer",         &this->tot_phot_cer,                 "tot_phot_cer/I") ;
+  this->GetTree ()->Branch ("tot_gap_phot_cer",     &this->tot_gap_phot_cer,         "tot_gap_phot_cer/I") ;
+  this->GetTree ()->Branch ("tot_det_phot_cer",     &this->tot_det_phot_cer,         "tot_det_phot_cer/I") ;
+  this->GetTree ()->Branch ("tot_gap_photFast_cer", "map<int,float>",&this->tot_gap_photFast_cer) ;
+  this->GetTree ()->Branch ("tot_det_photFast_cer", "map<int,float>",&this->tot_det_photFast_cer) ;
   
   this->GetTree ()->Branch ("depositedEnergies","vector<float>",&depositedEnergies) ;
   this->GetTree ()->Branch ("depositedEnergiesAtt","map<int,vector<float> >",&depositedEnergiesAtt) ;
@@ -70,13 +75,21 @@ CreateTree::CreateTree (TString name)
   this->GetTree()->Branch("PrimaryParticleE",PrimaryParticleE,"PrimaryParticleE[1000]/F");
   
   
-  h_phot_cer_lambda = new TH1F("h_phot_cer_lambda","",1000,250.,1250.);
-  h_phot_cer_E = new TH1F("h_phot_cer_E","",1000,0.,5.);
-  h_phot_cer_time = new TH1F("h_phot_cer_time","",10000,0.,10000.);
+  //h_phot_cer_lambda = new TH1F("h_phot_cer_lambda","",1000,250.,1250.);
+  //h_phot_cer_E = new TH1F("h_phot_cer_E","",1000,0.,5.);
+  //h_phot_cer_time = new TH1F("h_phot_cer_time","",10000,0.,10000.);
   
-  h_phot_cer_gap_lambda = new TH1F("h_phot_cer_gap_lambda","",1000,250.,1250.);
-  h_phot_cer_gap_E = new TH1F("h_phot_cer_gap_E","",1000,0.,5.);
-  h_phot_cer_gap_time = new TH1F("h_phot_cer_gap_time","",10000,0.,10000.);
+  //h_phot_cer_gap_lambda = new TH1F("h_phot_cer_gap_lambda","",1000,250.,1250.);
+  //h_phot_cer_gap_E = new TH1F("h_phot_cer_gap_E","",1000,0.,5.);
+  //h_phot_cer_gap_time = new TH1F("h_phot_cer_gap_time","",10000,0.,10000.);
+  
+  //for(unsigned int it = 0; it < this->attLengths.size(); ++it)
+  //{
+  //  int attLength = int( attLengths.at(it) );
+  //  h_photFast_cer_gap_lambda[attLength] = new TH1F(Form("h_photFast_cer_gap_lambda_attLength%04d",attLength),"",1000,250.,1250.);
+  //  h_photFast_cer_gap_E[attLength] = new TH1F(Form("h_photFast_cer_gap_E_attLength%04d",attLength),"",1000,0.,5.);
+  //  h_photFast_cer_gap_time[attLength] = new TH1F(Form("h_photFast_cer_gap_time_attLength%04d",attLength),"",10000,0.,10000.);
+  //}
   
   fibresPosition = new TNtuple ("fibresPosition", "fibresPosition", "N:x:y") ;
   
@@ -178,12 +191,19 @@ bool CreateTree::Write (TFile * outfile)
   outfile->cd () ;
   ftree->Write () ;
   fibresPosition->Write () ;
-  h_phot_cer_lambda->Write();
-  h_phot_cer_E->Write();
-  h_phot_cer_time->Write();
-  h_phot_cer_gap_lambda->Write();
-  h_phot_cer_gap_E->Write();
-  h_phot_cer_gap_time->Write();
+  //h_phot_cer_lambda->Write();
+  //h_phot_cer_E->Write();
+  //h_phot_cer_time->Write();
+  //h_phot_cer_gap_lambda->Write();
+  //h_phot_cer_gap_E->Write();
+  //h_phot_cer_gap_time->Write();
+  //for(unsigned int it = 0; it < attLengths.size(); ++it)
+  //{
+  //  int attLength = int( attLengths.at(it) );  
+  //  h_photFast_cer_gap_lambda[attLength]->Write();
+  //  h_photFast_cer_gap_E[attLength]->Write();
+  //  h_photFast_cer_gap_time[attLength]->Write();
+  //}
   return true ;
 }
 
@@ -207,7 +227,13 @@ void CreateTree::Clear ()
   tot_phot_cer = 0;
   tot_det_phot_cer = 0;
   tot_gap_phot_cer = 0;
-      
+  for(unsigned int it = 0; it < attLengths.size(); ++it)
+  {
+    int attLength = int( attLengths.at(it) );
+    tot_det_photFast_cer[attLength] = 0.;
+    tot_gap_photFast_cer[attLength] = 0.;
+  }
+  
   for (int i = 0 ; i < 4 ; ++i) 
   {
     inputMomentum->at (i) = 0. ;

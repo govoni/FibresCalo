@@ -10,6 +10,7 @@
 #pragma link off all typedef;
 
 #pragma link C++ class std::vector<float>;
+#pragma link C++ class std::map<int,float>;
 #pragma link C++ class std::map<int,std::vector<float> >;
 
 #endif

@@ -102,8 +102,6 @@ DetectorConstruction::DetectorConstruction (const string& configFileName)
     
   config.readInto (depth, "depth") ;
   
-  config.readIntoVect (CreateTree::Instance()->attLengths, "attLengths");
-  
   B_field_intensity = config.read<double>("B_field_intensity") * tesla ;
   
   margin = max (0.25 * fibre_distance, 2 * fibre_radius) ;
@@ -341,7 +339,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct ()
   }
   
   
-  fib = FiberInit(fibre_length,fibre_radius,fibre_absLength,rIndVecCore,rIndVecClad,rIndVecAir,rIndVecGap) ;
+  fib = FiberInit(fibre_length,fibre_radius,CreateTree::Instance()->attLengths,rIndVecCore,rIndVecClad,rIndVecAir,rIndVecGap) ;
   
   
   

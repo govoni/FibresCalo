@@ -8,6 +8,8 @@
 #include "G4UnitsTable.hh"
 #include "G4TrackingManager.hh"
 
+using namespace CLHEP;
+
 
 
 TrackingAction::TrackingAction()
@@ -60,6 +62,7 @@ void TrackingAction::PostUserTrackingAction(const G4Track* aTrack)
       
       TrackInformation* newTrackInfo = new TrackInformation((*secondaries)[i]);
       newTrackInfo -> SetParentInformation( aTrackInfo );
+      newTrackInfo -> SetParticleProdTimeInformation( secTrack->GetGlobalTime()/picosecond );
       secTrack -> SetUserInformation( newTrackInfo );
     }
   }

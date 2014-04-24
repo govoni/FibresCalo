@@ -22,7 +22,8 @@ private:
   
 public:
   
-  CreateTree (TString name) ;
+  CreateTree (TString name,
+              const std::vector<double>& attL) ;
   ~CreateTree () ;
   
   TTree*             GetTree  () const { return ftree ; } ;
@@ -50,8 +51,10 @@ public:
   std::vector<float> * depositedEnergyFibresAtt ;
   
   int tot_phot_cer;
-  int tot_det_phot_cer;
   int tot_gap_phot_cer;
+  int tot_det_phot_cer;
+  std::map<int,float> tot_gap_photFast_cer;
+  std::map<int,float> tot_det_photFast_cer;
     
   // energy deposited in each fibre of a tower
   std::vector<float> * depositedEnergies ;
@@ -80,16 +83,18 @@ public:
   float PrimaryParticleE[1000];
   
   // histograms
-  TH1F* h_phot_cer_lambda;
-  TH1F* h_phot_cer_E;
-  TH1F* h_phot_cer_time;
+  //TH1F* h_phot_cer_lambda;
+  //TH1F* h_phot_cer_E;
+  //TH1F* h_phot_cer_time;
   
-  TH1F* h_phot_cer_gap_lambda;
-  TH1F* h_phot_cer_gap_E;
-  TH1F* h_phot_cer_gap_time;
+  //TH1F* h_phot_cer_gap_lambda;
+  //TH1F* h_phot_cer_gap_E;
+  //TH1F* h_phot_cer_gap_time;
   
-  TH2F * leakage ;
-
+  //std::map<int,TH1F*> h_photFast_cer_gap_lambda;
+  //std::map<int,TH1F*> h_photFast_cer_gap_E;
+  //std::map<int,TH1F*> h_photFast_cer_gap_time;
+  
   // to be filled at the beginning of the event generation only
   TNtuple * fibresPosition ;
   

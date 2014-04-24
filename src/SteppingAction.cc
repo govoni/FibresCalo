@@ -111,7 +111,7 @@ void SteppingAction::UserSteppingAction (const G4Step * theStep)
       int index = to_int (fibreName) ;
       CreateTree::Instance ()->AddScintillationPhoton (index) ;
       
-      if( !propagateScintillation ) theTrack->SetTrackStatus(fKillTrackAndSecondaries);      
+      if( !propagateScintillation ) theTrack->SetTrackStatus(fKillTrackAndSecondaries);
     }
         
     if( (theTrack->GetLogicalVolumeAtVertex()->GetName().contains("fibre")) && (nStep == 1) && (processName == "Cerenkov") )
@@ -122,9 +122,9 @@ void SteppingAction::UserSteppingAction (const G4Step * theStep)
       int index = to_int (fibreName) ;
       CreateTree::Instance ()->AddCerenkovPhoton (index) ;
       
-      CreateTree::Instance()->h_phot_cer_lambda -> Fill( MyMaterials::fromEvToNm(theTrack->GetTotalEnergy()/eV) );
-      CreateTree::Instance()->h_phot_cer_E      -> Fill( theTrack->GetTotalEnergy()/eV );
-      CreateTree::Instance()->h_phot_cer_time   -> Fill( thePrePoint->GetGlobalTime()/picosecond );
+      //CreateTree::Instance()->h_phot_cer_lambda -> Fill( MyMaterials::fromEvToNm(theTrack->GetTotalEnergy()/eV) );
+      //CreateTree::Instance()->h_phot_cer_E      -> Fill( theTrack->GetTotalEnergy()/eV );
+      //CreateTree::Instance()->h_phot_cer_time   -> Fill( thePrePoint->GetGlobalTime()/picosecond );
       
       if( !propagateCerenkov ) theTrack->SetTrackStatus(fKillTrackAndSecondaries);      
     }
@@ -134,9 +134,9 @@ void SteppingAction::UserSteppingAction (const G4Step * theStep)
     {
       CreateTree::Instance()->tot_gap_phot_cer += 1;
       
-      CreateTree::Instance()->h_phot_cer_gap_lambda -> Fill( MyMaterials::fromEvToNm(theTrack->GetTotalEnergy()/eV) );
-      CreateTree::Instance()->h_phot_cer_gap_E      -> Fill( theTrack->GetTotalEnergy()/eV );
-      CreateTree::Instance()->h_phot_cer_gap_time   -> Fill( thePrePoint->GetGlobalTime()/picosecond );
+      //CreateTree::Instance()->h_phot_cer_gap_lambda -> Fill( MyMaterials::fromEvToNm(theTrack->GetTotalEnergy()/eV) );
+      //CreateTree::Instance()->h_phot_cer_gap_E      -> Fill( theTrack->GetTotalEnergy()/eV );
+      //CreateTree::Instance()->h_phot_cer_gap_time   -> Fill( thePrePoint->GetGlobalTime()/picosecond );
       
       theTrack->SetTrackStatus(fKillTrackAndSecondaries);
     }
@@ -161,19 +161,32 @@ void SteppingAction::UserSteppingAction (const G4Step * theStep)
       ph.dist = (local_z/module_z);
       ph.energy = theTrack->GetTotalEnergy()/eV;
       
-      Fiber fib = fDetectorConstruction -> GetFiber();
-      Travel trc = GetTimeAndProbability(ph,&fib,theTrackInfo->GetParticleProdTime());
+      Fiber* fib = fDetectorConstruction -> GetFiber();
+      std::map<int,Travel> trc = GetTimeAndProbability(ph,fib,theTrackInfo->GetParticleProdTime());
       
-      if( trc.prob[0] < 1.E-09 ) theTrack->SetTrackStatus(fKillTrackAndSecondaries);      
+      for(unsigned int it = 0; it < CreateTree::Instance()->attLengths.size(); ++it)
+      {
+        int attLength = int( CreateTree::Instance()->attLengths.at(it) );
+        
+        if( trc[attLength].prob[0] < 1.E-09 ) theTrack->SetTrackStatus(fKillTrackAndSecondaries);      
+        
+        for(int it2 = 0; it2 < 3; ++it2)
+        {
+          CreateTree::Instance()->tot_gap_photFast_cer[attLength] += trc[attLength].prob[it2];
+          
+          //CreateTree::Instance()->h_photFast_cer_gap_lambda[attLength] -> Fill( MyMaterials::fromEvToNm(theTrack->GetTotalEnergy()/eV), trc[attLength].prob[it2] );
+          //CreateTree::Instance()->h_photFast_cer_gap_E[attLength]      -> Fill( theTrack->GetTotalEnergy()/eV, trc[attLength].prob[it2] );
+          //CreateTree::Instance()->h_photFast_cer_gap_time[attLength]   -> Fill( trc[attLength].time[it2], trc[attLength].prob[it2] );
+        }
+      }
     }
   } // optical photon
-  
   
   
   // non optical photon
   else
   {
-    G4double energy = theStep->GetTotalEnergyDeposit () - theStep->GetNonIonizingEnergyDeposit();
+    G4double energy = theStep->GetTotalEnergyDeposit() - theStep->GetNonIonizingEnergyDeposit();
     CreateTree::Instance ()->depositedEnergyTotal += energy/GeV;
     
     
@@ -216,7 +229,6 @@ void SteppingAction::UserSteppingAction (const G4Step * theStep)
       CreateTree::Instance ()->depositedEnergyWorld += energy/GeV;
     }
     
-    
     if( thePrePVName == "absorberPV" || thePrePVName.contains("fibre") || thePrePVName.contains("fibre") )
     {
       G4int iRadius = sqrt( pow(thePrePosition.x()/mm-CreateTree::Instance()->inputInitialPosition->at(0),2) +
@@ -228,6 +240,7 @@ void SteppingAction::UserSteppingAction (const G4Step * theStep)
     }
     
   } // non optical photon
+  
   
   return ;
 }
