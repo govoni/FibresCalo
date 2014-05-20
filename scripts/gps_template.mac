@@ -5,14 +5,16 @@
 /gps/particle PARTICLE
 /gps/pos/type Plane
 /gps/pos/shape Square
-#/gps/pos/halfx HALFX mm
-#/gps/pos/halfy HALFY mm
-/gps/pos/halfx 0.005 mm
-/gps/pos/halfy 0.005 mm
+## wide beamspot
+/gps/pos/halfx HALFX mm
+/gps/pos/halfy HALFY mm
+## point-like beamspot
+#/gps/pos/halfx 0.005 mm
+#/gps/pos/halfy 0.005 mm
 
 ## eta=2, 3 degrees tilt
 #/gps/direction 0.0139 0.2654 0.9640
-# 3 degrees tilt
+## pointing, 3 degrees tilt
 /gps/direction 0.0523 0.0523 0.9986
 ## 0 degrees tilt
 ##/gps/direction 0.0000 0.0000 1.0000
