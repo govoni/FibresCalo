@@ -17,7 +17,8 @@ while(<USERCONFIG>)
 $LISTFile    = $User_Preferences{"LISTFile"};
 $TEMPLATECfg = $User_Preferences{"TEMPLATECfg"};
 $GPSMac      = $User_Preferences{"GPSMac"};
-$OUTPUTDir   = $User_Preferences{"OUTPUTDir"};
+$OUTPUTFolder= $User_Preferences{"OUTPUTFolder"};
+$OUTPUTLabel = $User_Preferences{"OUTPUTLabel"};
 $EXEName     = $User_Preferences{"EXEName"};
 
 $ISLxplus   = $User_Preferences{"ISLxplus"};
@@ -47,7 +48,7 @@ print LANCIA "#! /bin/zsh \n";
 
 $CURRENTDir = getcwd();
 
-$OUTPUTDir = $OUTPUTDir."/".$label2;
+$OUTPUTDir = $OUTPUTFolder."/".$OUTPUTLabel."/".$label2;
 if( $ISLxplus )
 {
   print("cmsMkdir ".$OUTPUTDir."\n");
@@ -65,7 +66,7 @@ if( $ISHercules )
 $OUTPUTJobDir = "";
 if( $ISLxplus )
 {
-  $OUTPUTJobDir = $CURRENTDir."/jobs/".$label2;
+  $OUTPUTJobDir = $CURRENTDir."/jobs/".$OUTPUTLabel."_".$label2;
   if( ! -e $OUTPUTJobDir )
   {
     system("mkdir ".$OUTPUTJobDir);

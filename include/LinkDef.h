@@ -2,7 +2,6 @@
 #define ROOT_TREE_VECTOR_LINKDEF_H 1
 
 #include <vector>
-#include <map>
 
 #ifdef __CINT__
 
@@ -10,8 +9,7 @@
 #pragma link off all typedef;
 
 #pragma link C++ class std::vector<float>;
-#pragma link C++ class std::map<int,float>;
-#pragma link C++ class std::map<int,std::vector<float> >;
+#pragma link C++ class std::vector<std::vector<float> >;
 
 #endif
 

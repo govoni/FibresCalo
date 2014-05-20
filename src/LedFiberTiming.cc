@@ -4,7 +4,7 @@ double cLight = 2.99792458e-1;   // speed of light in vacuum [mm/ps]
 
 
 
-Fiber FiberInit(const double& length, const double& radius, const std::vector<double>& att,
+Fiber FiberInit(const double& length, const double& radius, std::vector<float>* att,
                 const std::vector<std::pair<double,double> >& rIndVecCore,
                 const std::vector<std::pair<double,double> >& rIndVecClad,
                 const std::vector<std::pair<double,double> >& rIndVecAir,
@@ -75,9 +75,9 @@ double fresnelReflection(const double& th, const double& R)
 std::map<int,Travel> GetTimeAndProbability(Photon& ph, const Fiber* fib, const double& prodTime)
 {
   std::map<int,Travel> result;
-  for(unsigned int it = 0; it < fib->attenuation.size(); ++it)
+  for(unsigned int it = 0; it < fib->attenuation->size(); ++it)
   {
-    int att = int( fib->attenuation.at(it) );
+    int att = int( fib->attenuation->at(it) );
     
     Travel dummy;
     for(int i = 0; i < 10; ++i)
@@ -147,9 +147,9 @@ std::map<int,Travel> GetTimeAndProbability(Photon& ph, const Fiber* fib, const d
     double time = prodTime + length / cLight * refrIndCore;
     double prob = probReflections * (1.-probReflectRear);
     
-    for(unsigned int it = 0; it < fib->attenuation.size(); ++it)
+    for(unsigned int it = 0; it < fib->attenuation->size(); ++it)
     {
-      int att = int( fib->attenuation.at(it) );
+      int att = int( fib->attenuation->at(it) );
       result[att].time[i] = time;
       result[att].prob[i] =  exp( -1. * length / att ) * prob;
     }

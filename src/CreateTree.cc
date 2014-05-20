@@ -10,7 +10,7 @@ CreateTree* CreateTree::fInstance = NULL ;
 
 
 CreateTree::CreateTree (TString name,
-                        const std::vector<double>& attL)
+                        const std::vector<float>& attL)
 {
   if ( fInstance )
   {
@@ -21,7 +21,10 @@ CreateTree::CreateTree (TString name,
   this->fname     = name ;
   this->ftree     = new TTree (name,name) ;
   
-  this->attLengths = attL;
+  
+  this->attLengths = new std::vector<float>;
+  for(unsigned int it = 0; it < attL.size(); ++it)
+    this->attLengths->push_back( attL.at(it) );
   
   this->GetTree ()->Branch ("Event", &this->Event, "Event/I") ;
   
@@ -30,7 +33,9 @@ CreateTree::CreateTree (TString name,
   inputInitialPosition = new vector<float> (3, 0.) ; 
   depositedEnergyFibresAtt = new vector<float> ();
   depositedEnergies = new vector<float> () ; 
-  depositedEnergiesAtt = new map<int,vector<float> > () ; 
+  depositedEnergiesAtt = new vector<vector<float> > () ; 
+  tot_gap_photFast_cer = new vector<float> ();
+  tot_det_photFast_cer = new vector<float> ();
   depositFibres = new vector<int> () ; 
   cerenkovPhotons = new vector<int> () ; 
   cerenkovFibres = new vector<int> () ; 
@@ -48,14 +53,17 @@ CreateTree::CreateTree (TString name,
   this->GetTree ()->Branch ("depositedEnergyWorld",     &this->depositedEnergyWorld,       "depositedEnergyWorld/F") ;
   this->GetTree ()->Branch ("depositedEnergyFibresAtt", "vector<float>",&depositedEnergyFibresAtt);
   
+  this->GetTree ()->Branch ("totalTrackLengthFibres",       &this->totalTrackLengthFibres,             "totalTrackLengthFibres/F") ;
+  this->GetTree ()->Branch ("totalTrackLengthOverThFibres", &this->totalTrackLengthOverThFibres, "totalTrackLengthOverThFibres/F") ;
+  
   this->GetTree ()->Branch ("tot_phot_cer",         &this->tot_phot_cer,                 "tot_phot_cer/I") ;
   this->GetTree ()->Branch ("tot_gap_phot_cer",     &this->tot_gap_phot_cer,         "tot_gap_phot_cer/I") ;
   this->GetTree ()->Branch ("tot_det_phot_cer",     &this->tot_det_phot_cer,         "tot_det_phot_cer/I") ;
-  this->GetTree ()->Branch ("tot_gap_photFast_cer", "map<int,float>",&this->tot_gap_photFast_cer) ;
-  this->GetTree ()->Branch ("tot_det_photFast_cer", "map<int,float>",&this->tot_det_photFast_cer) ;
+  this->GetTree ()->Branch ("tot_gap_photFast_cer", "vector<float>",&this->tot_gap_photFast_cer) ;
+  this->GetTree ()->Branch ("tot_det_photFast_cer", "vector<float>",&this->tot_det_photFast_cer) ;
   
   this->GetTree ()->Branch ("depositedEnergies","vector<float>",&depositedEnergies) ;
-  this->GetTree ()->Branch ("depositedEnergiesAtt","map<int,vector<float> >",&depositedEnergiesAtt) ;
+  this->GetTree ()->Branch ("depositedEnergiesAtt","vector<vector<float> >",&depositedEnergiesAtt) ;
   this->GetTree ()->Branch ("depositFibres","vector<int>",&depositFibres) ;
   
   this->GetTree ()->Branch ("cerenkovPhotons","vector<int>",&cerenkovPhotons) ;
@@ -93,7 +101,12 @@ CreateTree::CreateTree (TString name,
   
   fibresPosition = new TNtuple ("fibresPosition", "fibresPosition", "N:x:y") ;
   
-  this->Clear () ;  
+  
+  attenuationLengths = new TTree("attenuationLengths", "attenuationLenghts");
+  attenuationLengths -> Branch("attLengths","vector<float>",&attLengths);
+  
+  
+  this->Clear () ;
 }
 
 
@@ -117,14 +130,22 @@ CreateTree::AddEnergyDeposit (int index, float deposit, std::map<int,float>& dep
     {
       depositFibres->push_back (index) ;
       depositedEnergies->push_back (deposit) ;
+      int i = 0;
       for(std::map<int,float>::const_iterator it = depositAtt.begin(); it != depositAtt.end(); ++it)
-        ((*depositedEnergiesAtt)[it->first]).push_back( (depositAtt[it->first]) ) ;
-    }   
+      {
+        (depositedEnergiesAtt->at(i)).push_back( (depositAtt[it->first]) ) ;
+        ++i;
+      }
+    }
   else
     {
       depositedEnergies->at (where - depositFibres->begin ()) += deposit ;
+      int i = 0;
       for(std::map<int,float>::const_iterator it = depositAtt.begin(); it != depositAtt.end(); ++it)
-        ((*depositedEnergiesAtt)[it->first]).at (where - depositFibres->begin ()) += depositAtt[it->first] ;
+      {
+        (depositedEnergiesAtt->at(i)).at (where - depositFibres->begin ()) += depositAtt[it->first] ;
+        ++i;
+      }
     }
   return ;
 }
@@ -191,6 +212,7 @@ bool CreateTree::Write (TFile * outfile)
   outfile->cd () ;
   ftree->Write () ;
   fibresPosition->Write () ;
+  attenuationLengths->Write() ;
   //h_phot_cer_lambda->Write();
   //h_phot_cer_E->Write();
   //h_phot_cer_time->Write();
@@ -222,17 +244,18 @@ void CreateTree::Clear ()
   depositedEnergyPost = 0. ;
   depositedEnergyWorld = 0. ;
   depositedEnergyFibresAtt->clear() ;
-  depositedEnergyFibresAtt->resize(CreateTree::Instance()->attLengths.size(),0);
+  depositedEnergyFibresAtt->resize(attLengths->size(),0);
+  
+  totalTrackLengthFibres = 0.;
+  totalTrackLengthOverThFibres = 0.;
   
   tot_phot_cer = 0;
   tot_det_phot_cer = 0;
   tot_gap_phot_cer = 0;
-  for(unsigned int it = 0; it < attLengths.size(); ++it)
-  {
-    int attLength = int( attLengths.at(it) );
-    tot_det_photFast_cer[attLength] = 0.;
-    tot_gap_photFast_cer[attLength] = 0.;
-  }
+  tot_gap_photFast_cer->clear();
+  tot_gap_photFast_cer->resize(attLengths->size(),0);
+  tot_det_photFast_cer->clear();
+  tot_det_photFast_cer->resize(attLengths->size(),0);
   
   for (int i = 0 ; i < 4 ; ++i) 
   {
@@ -245,6 +268,7 @@ void CreateTree::Clear ()
   
   depositedEnergies->clear () ;
   depositedEnergiesAtt->clear () ;
+  depositedEnergiesAtt->resize(attLengths->size());
   depositFibres->clear () ;
   scintillationPhotons->clear () ;
   scintillationFibres->clear () ;

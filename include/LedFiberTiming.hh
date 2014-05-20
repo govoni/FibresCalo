@@ -16,7 +16,7 @@ struct Fiber{
   std::vector<std::pair<double,double> > refrIndsClad;
   std::vector<std::pair<double,double> > refrIndsAir;
   std::vector<std::pair<double,double> > refrIndsGap;
-  std::vector<double>   attenuation;
+  std::vector<float>* attenuation;
   TVector3 position; 
   TVector3 direction;
   double   radius;
@@ -35,7 +35,7 @@ struct Travel{
   double   time[10];
 };
 
-Fiber FiberInit(const double& length, const double& radius, const std::vector<double>& att,
+Fiber FiberInit(const double& length, const double& radius, std::vector<float>* att,
                 const std::vector<std::pair<double,double> >& rIndVecCore,
                 const std::vector<std::pair<double,double> >& rIndVecClad,
                 const std::vector<std::pair<double,double> >& rIndVecAir,

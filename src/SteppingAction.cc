@@ -164,15 +164,15 @@ void SteppingAction::UserSteppingAction (const G4Step * theStep)
       Fiber* fib = fDetectorConstruction -> GetFiber();
       std::map<int,Travel> trc = GetTimeAndProbability(ph,fib,theTrackInfo->GetParticleProdTime());
       
-      for(unsigned int it = 0; it < CreateTree::Instance()->attLengths.size(); ++it)
+      for(unsigned int it = 0; it < CreateTree::Instance()->attLengths->size(); ++it)
       {
-        int attLength = int( CreateTree::Instance()->attLengths.at(it) );
+        int attLength = int( CreateTree::Instance()->attLengths->at(it) );
         
         if( trc[attLength].prob[0] < 1.E-09 ) theTrack->SetTrackStatus(fKillTrackAndSecondaries);      
         
         for(int it2 = 0; it2 < 3; ++it2)
         {
-          CreateTree::Instance()->tot_gap_photFast_cer[attLength] += trc[attLength].prob[it2];
+          CreateTree::Instance()->tot_gap_photFast_cer->at(it) += trc[attLength].prob[it2];
           
           //CreateTree::Instance()->h_photFast_cer_gap_lambda[attLength] -> Fill( MyMaterials::fromEvToNm(theTrack->GetTotalEnergy()/eV), trc[attLength].prob[it2] );
           //CreateTree::Instance()->h_photFast_cer_gap_E[attLength]      -> Fill( theTrack->GetTotalEnergy()/eV, trc[attLength].prob[it2] );
@@ -199,9 +199,9 @@ void SteppingAction::UserSteppingAction (const G4Step * theStep)
       CreateTree::Instance ()->depositedEnergyFibres += energy/GeV;
       
       std::map<int,float> depAtt;
-      for(unsigned int it = 0; it < CreateTree::Instance()->attLengths.size(); ++it)
+      for(unsigned int it = 0; it < CreateTree::Instance()->attLengths->size(); ++it)
       {
-        float attLength = CreateTree::Instance()->attLengths.at(it);
+        float attLength = CreateTree::Instance()->attLengths->at(it);
         
         CreateTree::Instance()->depositedEnergyFibresAtt->at(it) += energy/GeV*exp(-1.*(module_z-local_z)/attLength);
         depAtt[attLength] = ( energy/GeV*exp(-1.*(module_z-local_z)/attLength) );
@@ -211,6 +211,12 @@ void SteppingAction::UserSteppingAction (const G4Step * theStep)
       int index = to_int (fibreName) ;
       CreateTree::Instance ()->AddEnergyDeposit (index, energy/GeV, depAtt);
       
+      if( particleType->GetParticleName() == "e+" || particleType->GetParticleName() == "e-" )
+      {
+        CreateTree::Instance()->totalTrackLengthFibres += theStep->GetStepLength()/cm;
+        if( theTrack->GetTotalEnergy()/keV > 705. )
+          CreateTree::Instance()->totalTrackLengthOverThFibres += theStep->GetStepLength()/cm;
+      }
     }
     else if (thePrePVName == "absorberPV" || thePrePVName.contains("hole"))
     {

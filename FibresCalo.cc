@@ -135,9 +135,12 @@ int main(int argc,char** argv)
   G4cout << "Random seed : " << myseed << G4endl;
   CLHEP::HepRandom::setTheSeed(myseed);
   
-  std::vector<double> attLengths;
-  config.readIntoVect(attLengths, "attLengths");
+  std::vector<float> attLengths;
+  config.readIntoVect(attLengths,"attLengths");
+  
   CreateTree* mytree = new CreateTree ("tree",attLengths) ;
+  CreateTree::Instance()->attenuationLengths->Fill();
+  
   
   // Get runtime options
   //

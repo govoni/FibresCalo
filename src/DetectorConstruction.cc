@@ -327,7 +327,9 @@ G4VPhysicalVolume* DetectorConstruction::Construct ()
   for(unsigned int it = 0; it < mpVec->GetVectorLength(); ++it)
   {
     std::pair<double,double> dummy(mpVec->GetLowEdgeEnergy(it)/eV,(*mpVec)[it]);
-    rIndVecClad.push_back(dummy);
+    std::pair<double,double> dummy2(mpVec->GetLowEdgeEnergy(it)/eV,1.40);
+    rIndVecClad.push_back(dummy);    // air
+    //rIndVecClad.push_back(dummy2);   // 1.40
     rIndVecAir.push_back(dummy);
   }
   
