@@ -89,6 +89,7 @@ DetectorConstruction::DetectorConstruction (const string& configFileName)
   config.readInto (module_xy, "module_xy") ;
   
   config.readInto (fibre_material, "fibre_material") ;
+  config.readInto (fibre_cladRIndex, "fibre_cladRIndex") ;
   config.readInto (fibre_radius, "fibre_radius") ;
   config.readInto (fibre_length, "fibre_length") ;
   config.readInto (fibre_distance, "fibre_distance") ;
@@ -327,10 +328,9 @@ G4VPhysicalVolume* DetectorConstruction::Construct ()
   for(unsigned int it = 0; it < mpVec->GetVectorLength(); ++it)
   {
     std::pair<double,double> dummy(mpVec->GetLowEdgeEnergy(it)/eV,(*mpVec)[it]);
-    std::pair<double,double> dummy2(mpVec->GetLowEdgeEnergy(it)/eV,1.40);
-    rIndVecClad.push_back(dummy);    // air
-    //rIndVecClad.push_back(dummy2);   // 1.40
+    std::pair<double,double> dummy2(mpVec->GetLowEdgeEnergy(it)/eV,fibre_cladRIndex);
     rIndVecAir.push_back(dummy);
+    rIndVecClad.push_back(dummy2);
   }
   
   mpVec = GaMaterial->GetMaterialPropertiesTable()->GetProperty("RINDEX");

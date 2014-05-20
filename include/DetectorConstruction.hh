@@ -102,6 +102,7 @@ private:
   //G4Double  tolerance ;            // minimum distance between fibre and module side
   
   G4int    fibre_material ;
+  G4double fibre_cladRIndex;
   G4double fibre_radius ;
   G4double fibre_length ;      
   G4double fibre_distance ;    // distance between fibres

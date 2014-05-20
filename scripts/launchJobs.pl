@@ -28,6 +28,7 @@ $QUEUE      = $User_Preferences{"QUEUE"};
 $ABSMAT     = $User_Preferences{"ABSMAT"};
 $WFRAC      = $User_Preferences{"WFRAC"};
 $FIBMAT     = $User_Preferences{"FIBMAT"};
+$CLADRIND   = $User_Preferences{"CLADRIND"};
 $FIBRAD     = $User_Preferences{"FIBRAD"};
 $FIBDIST    = $User_Preferences{"FIBDIST"};
 $FIBLENGTH  = $User_Preferences{"FIBLENGTH"};
@@ -37,7 +38,7 @@ if( $WFRAC == -1 )
   $WFRAC = $ARGV[2];
 }
 
-$label2 = "absMat".$ABSMAT."-".$WFRAC."_fibMat".$FIBMAT."_fibRad".$FIBRAD."_fibDist".$FIBDIST;
+$label2 = "absMat".$ABSMAT."-".$WFRAC."_fibMat".$FIBMAT."_cladRInd".$CLADRIND."_fibRad".$FIBRAD."_fibDist".$FIBDIST;
 
 
 
@@ -154,6 +155,7 @@ while(<LIST>)
     system("cat ".$TEMPLATECfg."   | sed -e s%ABSMAT%".$ABSMAT.
                                "%g | sed -e s%WFRAC%".$WFRAC.
                                "%g | sed -e s%FIBMAT%".$FIBMAT.
+                               "%g | sed -e s%CLADRIND%".$CLADRIND.
                                "%g | sed -e s%FIBRAD%".$FIBRAD.
                                "%g | sed -e s%FIBDIST%".$FIBDIST.
                                "%g | sed -e s%FIBLENGTH%".$FIBLENGTH.
