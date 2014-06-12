@@ -87,7 +87,7 @@ private:
   G4double  expHall_x ;
   G4double  expHall_y ;
   G4double  expHall_z ;
-            
+  
   G4int    world_material ;    // world material
   
   G4int    abs_material ;    // absorber material
@@ -95,6 +95,7 @@ private:
   G4double hole_radius ;     // radius of the holes
   G4double module_z ;        // will be set as fibre length
   G4double module_xy ;       // size of the calo tower containing fibres
+  G4int    postshower;       // flag to place a postshower behind the module
   
   G4int     NfibresAlongY ;        // number of fibres along the Y side of the calo tower
   G4double  margin ;               // minimum distance between fibres and tower sides

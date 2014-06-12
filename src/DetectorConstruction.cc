@@ -87,6 +87,7 @@ DetectorConstruction::DetectorConstruction (const string& configFileName)
   config.readInto (W_fraction, "W_fraction") ;
   config.readInto (hole_radius, "hole_radius") ;
   config.readInto (module_xy, "module_xy") ;
+  config.readInto (postshower, "postshower") ;
   
   config.readInto (fibre_material, "fibre_material") ;
   config.readInto (fibre_cladRIndex, "fibre_cladRIndex") ;
@@ -108,11 +109,12 @@ DetectorConstruction::DetectorConstruction (const string& configFileName)
   margin = max (0.25 * fibre_distance, 2 * fibre_radius) ;
   NfibresAlongY = floor ((module_xy - 2 * margin - 0.5 * fibre_distance) / fibre_distance) + 1 ;
   module_z = fibre_length;
-
-  expHall_x = module_xy * 3 ; 
-  expHall_y = module_xy * 3 ; 
-  expHall_z = module_z * 3 ;
-
+ 
+  expHall_x = module_xy * 2 ;
+  expHall_y = module_xy * 2 ;
+  expHall_z = module_z * 2 ;
+  if( postshower ) expHall_z *= 3;
+  
   B_field_IsInitialized = false ;
   
   initializeMaterials () ;
@@ -146,20 +148,18 @@ G4VPhysicalVolume* DetectorConstruction::Construct ()
   G4VPhysicalVolume * worldPV = new G4PVPlacement (0, G4ThreeVector (), worldLV, "World", 0, false, 0, checkOverlaps) ;
   
   
-  // The embedding absorber, mimicking the rest of material around
-  //   put an embedder four times as the detector in each direction, and fill it with absorber, 
-  //   to quickly stop leaking showers and get an idea of where it would leak laterally
-  // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
-  //G4VSolid * embedderS = new G4Box ("embedder", 0.5 * expHall_x, 0.5 * expHall_y, module_z) ;
-  //G4LogicalVolume * embedderLV = new G4LogicalVolume (embedderS, AbMaterial, "embedderLV", 0, 0, 0) ;
-  //new G4PVPlacement (0, G4ThreeVector (0., 0., 0.5 * module_z), embedderLV, "embedderPV", worldLV, false, 0, checkOverlaps) ;
-  
-  
   // The calorimeter
   // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
   G4VSolid * calorimeterS = new G4Box ("calorimeterS", 0.5 * module_xy, 0.5 * module_xy, 0.5 * module_z) ;
   G4LogicalVolume * calorimeterLV = new G4LogicalVolume (calorimeterS, WoMaterial, "calorimeterLV") ;  
-  new G4PVPlacement (0, G4ThreeVector (0., 0., 0.), calorimeterLV, "calorimeterPV", worldLV, false, 0, checkOverlaps) ;
+  if( !postshower )
+    new G4PVPlacement (0, G4ThreeVector (0., 0., 0.), calorimeterLV, "calorimeterPV", worldLV, false, 0, checkOverlaps) ;
+  else
+  {
+    new G4PVPlacement (0, G4ThreeVector (0., 0., 0.), calorimeterLV, "calorimeterPV", worldLV, false, 0, checkOverlaps) ;
+    new G4PVPlacement (0, G4ThreeVector (0., 0., 1.*module_z), calorimeterLV, "postshower1PV", worldLV, false, 0, checkOverlaps) ;
+    new G4PVPlacement (0, G4ThreeVector (0., 0., 2.*module_z), calorimeterLV, "postshower2PV", worldLV, false, 0, checkOverlaps) ;
+  }
   
   
   // The absorber
@@ -215,23 +215,36 @@ G4VPhysicalVolume* DetectorConstruction::Construct ()
   
   // fibre gap for photon counting
   // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
-  G4VSolid * gapLayerS = new G4Box ("gapLayerS", 0.5*module_xy, 0.5*module_xy, 0.5*depth) ;
-  G4VSolid * gapS      = new G4Box (     "gapS", 0.5*module_xy, 0.5*module_xy, 0.5*(gap_l-depth)) ;
-  G4LogicalVolume * gapLayerLV = new G4LogicalVolume (gapLayerS, GaMaterial, "gapLayerLV") ;
-  G4LogicalVolume * gapLV      = new G4LogicalVolume (gapS,      GaMaterial,      "gapLV") ;
-  new G4PVPlacement (0, G4ThreeVector (0., 0., 0.5*module_z+0.5*depth),          gapLayerLV, "gapLayerPV", worldLV, false, 0, checkOverlaps) ;
-  new G4PVPlacement (0, G4ThreeVector (0., 0., 0.5*module_z+depth+0.5*(gap_l-depth)), gapLV,      "gapPV", worldLV, false, 0, checkOverlaps) ;
+  G4VSolid * gapLayerS = NULL;
+  G4VSolid * gapS      = NULL;
+  G4LogicalVolume * gapLayerLV = NULL;
+  G4LogicalVolume * gapLV      = NULL;
+  if( !postshower )
+  {
+    gapLayerS = new G4Box ("gapLayerS", 0.5*module_xy, 0.5*module_xy, 0.5*depth) ;
+    gapS      = new G4Box (     "gapS", 0.5*module_xy, 0.5*module_xy, 0.5*(gap_l-depth)) ;
+    gapLayerLV = new G4LogicalVolume (gapLayerS, GaMaterial, "gapLayerLV") ;
+    gapLV      = new G4LogicalVolume (gapS,      GaMaterial,      "gapLV") ;
+    new G4PVPlacement (0, G4ThreeVector (0., 0., 0.5*module_z+0.5*depth),          gapLayerLV, "gapLayerPV", worldLV, false, 0, checkOverlaps) ;
+    new G4PVPlacement (0, G4ThreeVector (0., 0., 0.5*module_z+depth+0.5*(gap_l-depth)), gapLV,      "gapPV", worldLV, false, 0, checkOverlaps) ;
+  }
   
   
   // Si detector for photon counting
   // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
-  G4VSolid * detLayerS = new G4Box ("detLayerS", 0.5*module_xy, 0.5*module_xy, 0.5*depth) ;
-  G4VSolid * detS      = new G4Box (     "detS", 0.5*module_xy, 0.5*module_xy, 0.5*(det_l-depth)) ;
-  G4LogicalVolume * detLayerLV = new G4LogicalVolume (detLayerS, DeMaterial, "detLayerLV") ;
-  G4LogicalVolume * detLV      = new G4LogicalVolume (detS,      DeMaterial,      "detLV") ;
-  new G4PVPlacement (0, G4ThreeVector (0., 0., 0.5*module_z+gap_l+0.5*depth),          detLayerLV, "detLayerPV", worldLV, false, 0, checkOverlaps) ;
-  new G4PVPlacement (0, G4ThreeVector (0., 0., 0.5*module_z+gap_l+depth+0.5*(det_l-depth)), detLV,      "detPV", worldLV, false, 0, checkOverlaps) ;
-  
+  G4VSolid * detLayerS = NULL;
+  G4VSolid * detS      = NULL;
+  G4LogicalVolume * detLayerLV = NULL;
+  G4LogicalVolume * detLV      = NULL;
+  if( !postshower )
+  {
+    detLayerS = new G4Box ("detLayerS", 0.5*module_xy, 0.5*module_xy, 0.5*depth) ;
+    detS      = new G4Box (     "detS", 0.5*module_xy, 0.5*module_xy, 0.5*(det_l-depth)) ;
+    detLayerLV = new G4LogicalVolume (detLayerS, DeMaterial, "detLayerLV") ;
+    detLV      = new G4LogicalVolume (detS,      DeMaterial,      "detLV") ;
+    new G4PVPlacement (0, G4ThreeVector (0., 0., 0.5*module_z+gap_l+0.5*depth),          detLayerLV, "detLayerPV", worldLV, false, 0, checkOverlaps) ;
+    new G4PVPlacement (0, G4ThreeVector (0., 0., 0.5*module_z+gap_l+depth+0.5*(det_l-depth)), detLV,      "detPV", worldLV, false, 0, checkOverlaps) ;
+  }
   
   
   //-----------------------------------------------------
@@ -256,11 +269,6 @@ G4VPhysicalVolume* DetectorConstruction::Construct ()
   VisAttWorld->SetForceWireframe (true) ;
   worldLV->SetVisAttributes (VisAttWorld) ;
   
-  //G4VisAttributes* VisAttEmbedder = new G4VisAttributes (red) ;
-  //VisAttEmbedder->SetVisibility (true) ;
-  //VisAttEmbedder->SetForceWireframe (true) ;
-  //embedderLV->SetVisAttributes (VisAttEmbedder) ;
-  
   G4VisAttributes* VisAttCalorimeter = new G4VisAttributes (yellow) ;
   VisAttCalorimeter->SetVisibility (true) ;
   VisAttCalorimeter->SetForceWireframe (true) ;
@@ -281,26 +289,29 @@ G4VPhysicalVolume* DetectorConstruction::Construct ()
   VisAttfibre->SetForceWireframe (false) ;
   fibreLV->SetVisAttributes (VisAttfibre) ;  
   
-  G4VisAttributes* VisAttGapLayer = new G4VisAttributes(red);
-  VisAttGapLayer->SetVisibility(true);
-  VisAttGapLayer->SetForceWireframe(false);
-  gapLayerLV->SetVisAttributes(VisAttGapLayer);
-  
-  G4VisAttributes* VisAttGap = new G4VisAttributes(blue);
-  VisAttGap->SetVisibility(true);
-  VisAttGap->SetForceWireframe(false);
-  gapLV->SetVisAttributes(VisAttGap);
-  
-  G4VisAttributes* VisAttDetLayer = new G4VisAttributes(red);
-  VisAttDetLayer->SetVisibility(true);
-  VisAttDetLayer->SetForceWireframe(false);
-  detLayerLV->SetVisAttributes(VisAttDetLayer);
-  
-  G4VisAttributes* VisAttDet = new G4VisAttributes(gray);
-  VisAttDet->SetVisibility(true);
-  VisAttDet->SetForceWireframe(false);
-  detLV->SetVisAttributes(VisAttDet);
+  if( !postshower )
+  {
+    G4VisAttributes* VisAttGapLayer = new G4VisAttributes(red);
+    VisAttGapLayer->SetVisibility(true);
+    VisAttGapLayer->SetForceWireframe(false);
+    gapLayerLV->SetVisAttributes(VisAttGapLayer);
     
+    G4VisAttributes* VisAttGap = new G4VisAttributes(blue);
+    VisAttGap->SetVisibility(true);
+    VisAttGap->SetForceWireframe(false);
+    gapLV->SetVisAttributes(VisAttGap);
+    
+    G4VisAttributes* VisAttDetLayer = new G4VisAttributes(red);
+    VisAttDetLayer->SetVisibility(true);
+    VisAttDetLayer->SetForceWireframe(false);
+    detLayerLV->SetVisAttributes(VisAttDetLayer);
+    
+    G4VisAttributes* VisAttDet = new G4VisAttributes(gray);
+    VisAttDet->SetVisibility(true);
+    VisAttDet->SetForceWireframe(false);
+    detLV->SetVisAttributes(VisAttDet);
+  }
+  
   //PG call the magnetic field initialisation
   if (B_field_intensity > 0.1 * tesla) ConstructField () ; 
   

@@ -45,8 +45,8 @@ public:
   float depositedEnergyTotal ;
   float depositedEnergyFibres ;
   float depositedEnergyAbsorber ;
-  float depositedEnergySide ;
-  float depositedEnergyPost ;
+  float depositedEnergyFibres_post ;
+  float depositedEnergyAbsorber_post ;
   float depositedEnergyWorld ;
   std::vector<float> * depositedEnergyFibresAtt ;
   
@@ -54,6 +54,7 @@ public:
   float totalTrackLengthOverThFibres ;
   
   int tot_phot_cer;
+  int tot_phot_cer_post;
   int tot_gap_phot_cer;
   int tot_det_phot_cer;
   std::vector<float> * tot_gap_photFast_cer;

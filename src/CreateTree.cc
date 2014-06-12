@@ -45,18 +45,19 @@ CreateTree::CreateTree (TString name,
   this->GetTree ()->Branch ("inputMomentum","vector<float>",&inputMomentum) ;
   this->GetTree ()->Branch ("inputInitialPosition","vector<float>",&inputInitialPosition) ;
   
-  this->GetTree ()->Branch ("depositedEnergyTotal",     &this->depositedEnergyTotal,       "depositedEnergyTotal/F") ;
-  this->GetTree ()->Branch ("depositedEnergyFibres",    &this->depositedEnergyFibres,     "depositedEnergyFibres/F") ;
-  this->GetTree ()->Branch ("depositedEnergyAbsorber",  &this->depositedEnergyAbsorber, "depositedEnergyAbsorber/F") ;
-  this->GetTree ()->Branch ("depositedEnergySide",      &this->depositedEnergySide,         "depositedEnergySide/F") ;
-  this->GetTree ()->Branch ("depositedEnergyPost",      &this->depositedEnergyPost,         "depositedEnergyPost/F") ;
-  this->GetTree ()->Branch ("depositedEnergyWorld",     &this->depositedEnergyWorld,       "depositedEnergyWorld/F") ;
+  this->GetTree ()->Branch ("depositedEnergyTotal",        &this->depositedEnergyTotal,                "depositedEnergyTotal/F") ;
+  this->GetTree ()->Branch ("depositedEnergyFibres",       &this->depositedEnergyFibres,              "depositedEnergyFibres/F") ;
+  this->GetTree ()->Branch ("depositedEnergyAbsorber",     &this->depositedEnergyAbsorber,          "depositedEnergyAbsorber/F") ;
+  this->GetTree ()->Branch ("depositedEnergyFibres_post",  &this->depositedEnergyFibres_post,    "depositedEnergyFibres_post/F") ;
+  this->GetTree ()->Branch ("depositedEnergyAbsorber_post",&this->depositedEnergyAbsorber_post,"depositedEnergyAbsorber_post/F") ;
+  this->GetTree ()->Branch ("depositedEnergyWorld",        &this->depositedEnergyWorld,       "         depositedEnergyWorld/F") ;
   this->GetTree ()->Branch ("depositedEnergyFibresAtt", "vector<float>",&depositedEnergyFibresAtt);
   
   this->GetTree ()->Branch ("totalTrackLengthFibres",       &this->totalTrackLengthFibres,             "totalTrackLengthFibres/F") ;
   this->GetTree ()->Branch ("totalTrackLengthOverThFibres", &this->totalTrackLengthOverThFibres, "totalTrackLengthOverThFibres/F") ;
   
   this->GetTree ()->Branch ("tot_phot_cer",         &this->tot_phot_cer,                 "tot_phot_cer/I") ;
+  this->GetTree ()->Branch ("tot_phot_cer_post",    &this->tot_phot_cer_post,       "tot_phot_cer_post/I") ;
   this->GetTree ()->Branch ("tot_gap_phot_cer",     &this->tot_gap_phot_cer,         "tot_gap_phot_cer/I") ;
   this->GetTree ()->Branch ("tot_det_phot_cer",     &this->tot_det_phot_cer,         "tot_det_phot_cer/I") ;
   this->GetTree ()->Branch ("tot_gap_photFast_cer", "vector<float>",&this->tot_gap_photFast_cer) ;
@@ -126,27 +127,28 @@ CreateTree::AddEnergyDeposit (int index, float deposit, std::map<int,float>& dep
   // find if it exists already
   vector<int>::const_iterator where = find (depositFibres->begin (), 
                                             depositFibres->end (), index) ;
+  
   if (depositFibres->end () == where) 
+  {
+    depositFibres->push_back (index) ;
+    depositedEnergies->push_back (deposit) ;
+    int i = 0;
+    for(std::map<int,float>::const_iterator it = depositAtt.begin(); it != depositAtt.end(); ++it)
     {
-      depositFibres->push_back (index) ;
-      depositedEnergies->push_back (deposit) ;
-      int i = 0;
-      for(std::map<int,float>::const_iterator it = depositAtt.begin(); it != depositAtt.end(); ++it)
-      {
-        (depositedEnergiesAtt->at(i)).push_back( (depositAtt[it->first]) ) ;
-        ++i;
-      }
+      (depositedEnergiesAtt->at(i)).push_back( (depositAtt[it->first]) ) ;
+      ++i;
     }
+  }
   else
+  {
+    depositedEnergies->at (where - depositFibres->begin ()) += deposit ;
+    int i = 0;
+    for(std::map<int,float>::const_iterator it = depositAtt.begin(); it != depositAtt.end(); ++it)
     {
-      depositedEnergies->at (where - depositFibres->begin ()) += deposit ;
-      int i = 0;
-      for(std::map<int,float>::const_iterator it = depositAtt.begin(); it != depositAtt.end(); ++it)
-      {
-        (depositedEnergiesAtt->at(i)).at (where - depositFibres->begin ()) += depositAtt[it->first] ;
-        ++i;
-      }
+      (depositedEnergiesAtt->at(i)).at (where - depositFibres->begin ()) += depositAtt[it->first] ;
+      ++i;
     }
+  }
   return ;
 }
 
@@ -240,8 +242,8 @@ void CreateTree::Clear ()
   depositedEnergyTotal = 0. ;
   depositedEnergyFibres = 0. ;
   depositedEnergyAbsorber = 0. ;
-  depositedEnergySide = 0. ;
-  depositedEnergyPost = 0. ;
+  depositedEnergyFibres_post = 0. ;
+  depositedEnergyAbsorber_post = 0. ;
   depositedEnergyWorld = 0. ;
   depositedEnergyFibresAtt->clear() ;
   depositedEnergyFibresAtt->resize(attLengths->size(),0);
@@ -250,6 +252,7 @@ void CreateTree::Clear ()
   totalTrackLengthOverThFibres = 0.;
   
   tot_phot_cer = 0;
+  tot_phot_cer_post = 0;
   tot_det_phot_cer = 0;
   tot_gap_phot_cer = 0;
   tot_gap_photFast_cer->clear();

@@ -116,7 +116,14 @@ void SteppingAction::UserSteppingAction (const G4Step * theStep)
         
     if( (theTrack->GetLogicalVolumeAtVertex()->GetName().contains("fibre")) && (nStep == 1) && (processName == "Cerenkov") )
     {
-      CreateTree::Instance()->tot_phot_cer += 1;
+      G4bool isInPostshower = false;
+      if( theTrack->GetVertexPosition().z() > 0.5*module_z )
+        isInPostshower = true;
+      
+      if( !isInPostshower )
+        CreateTree::Instance()->tot_phot_cer += 1;
+      else
+        CreateTree::Instance()->tot_phot_cer_post += 1;
       
       string fibreName (thePrePVName.data ()) ;
       int index = to_int (fibreName) ;
@@ -182,58 +189,67 @@ void SteppingAction::UserSteppingAction (const G4Step * theStep)
     }
   } // optical photon
   
-  
   // non optical photon
   else
   {
+    //G4cout << ">>> begin non optical photon" << G4endl;
+    
     G4double energy = theStep->GetTotalEnergyDeposit() - theStep->GetNonIonizingEnergyDeposit();
-    CreateTree::Instance ()->depositedEnergyTotal += energy/GeV;
-    
-    
-    // FIXME put a zero-suppression threshold
     if ( energy == 0. ) return ;
     
+    CreateTree::Instance ()->depositedEnergyTotal += energy/GeV;
     
-    if (thePrePVName.contains ("fibre"))
+    G4bool isInPostshower = false;
+    if( thePrePosition.z() > 0.5*module_z )
+      isInPostshower = true;
+    
+    
+    if( thePrePVName.contains("fibre") )
     {
-      CreateTree::Instance ()->depositedEnergyFibres += energy/GeV;
+      if( !isInPostshower )
+        CreateTree::Instance ()->depositedEnergyFibres += energy/GeV;
+      else
+        CreateTree::Instance ()->depositedEnergyFibres_post += energy/GeV;
       
       std::map<int,float> depAtt;
       for(unsigned int it = 0; it < CreateTree::Instance()->attLengths->size(); ++it)
       {
         float attLength = CreateTree::Instance()->attLengths->at(it);
         
-        CreateTree::Instance()->depositedEnergyFibresAtt->at(it) += energy/GeV*exp(-1.*(module_z-local_z)/attLength);
-        depAtt[attLength] = ( energy/GeV*exp(-1.*(module_z-local_z)/attLength) );
+        if( !isInPostshower )
+        {
+          CreateTree::Instance()->depositedEnergyFibresAtt->at(it) += energy/GeV*exp(-1.*(module_z-local_z)/attLength);
+          depAtt[attLength] = ( energy/GeV*exp(-1.*(module_z-local_z)/attLength) );
+        }
       }
-      
       string fibreName (thePrePVName.data ()) ;
       int index = to_int (fibreName) ;
-      CreateTree::Instance ()->AddEnergyDeposit (index, energy/GeV, depAtt);
       
-      if( particleType->GetParticleName() == "e+" || particleType->GetParticleName() == "e-" )
+      if( !isInPostshower )
       {
-        CreateTree::Instance()->totalTrackLengthFibres += theStep->GetStepLength()/cm;
-        if( theTrack->GetTotalEnergy()/keV > 705. )
-          CreateTree::Instance()->totalTrackLengthOverThFibres += theStep->GetStepLength()/cm;
+        CreateTree::Instance ()->AddEnergyDeposit (index, energy/GeV, depAtt);
+        
+        if( particleType->GetParticleName() == "e+" || particleType->GetParticleName() == "e-" )
+        {
+          CreateTree::Instance()->totalTrackLengthFibres += theStep->GetStepLength()/cm;
+          if( theTrack->GetTotalEnergy()/keV > 705. )
+            CreateTree::Instance()->totalTrackLengthOverThFibres += theStep->GetStepLength()/cm;
+        }
       }
     }
-    else if (thePrePVName == "absorberPV" || thePrePVName.contains("hole"))
+    if( thePrePVName == "absorberPV" || thePrePVName.contains("hole") )
     {
-      CreateTree::Instance ()->depositedEnergyAbsorber += energy/GeV;
+      if( !isInPostshower )
+        CreateTree::Instance ()->depositedEnergyAbsorber += energy/GeV;
+      else
+        CreateTree::Instance ()->depositedEnergyAbsorber_post += energy/GeV;
     }
-    else if (thePrePVName == "sideshowerPV")
-    {
-      CreateTree::Instance ()->depositedEnergySide += energy/GeV;
-    }
-    else if (thePrePVName == "postshowerPV")
-    {
-      CreateTree::Instance ()->depositedEnergyPost += energy/GeV;
-    }
-    else if (thePrePVName == "World")
+    
+    if( thePrePVName == "World" )
     {
       CreateTree::Instance ()->depositedEnergyWorld += energy/GeV;
     }
+    
     
     if( thePrePVName == "absorberPV" || thePrePVName.contains("fibre") || thePrePVName.contains("fibre") )
     {
@@ -245,6 +261,7 @@ void SteppingAction::UserSteppingAction (const G4Step * theStep)
       if( iDepth < 5000 ) CreateTree::Instance()->Longitudinal_ion_energy_absorber[iDepth] += energy/GeV;
     }
     
+    //G4cout << ">>> end non optical photon" << G4endl;
   } // non optical photon
   
   

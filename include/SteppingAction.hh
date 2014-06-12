@@ -49,7 +49,6 @@ public:
   
 private:
   DetectorConstruction* fDetectorConstruction;  
-  Fiber* fFiber;  
   
   G4int propagateScintillation;
   G4int propagateCerenkov;
