@@ -105,33 +105,38 @@ void SteppingAction::UserSteppingAction (const G4Step * theStep)
   {
     G4String processName = theTrack->GetCreatorProcess()->GetProcessName();
     
+    G4bool isInPostshower = false;
+    if( theTrack->GetVertexPosition().z() > 0.5*module_z )
+      isInPostshower = true;
+    
     if( (theTrack->GetLogicalVolumeAtVertex()->GetName().contains("fibre")) && (nStep == 1) && (processName == "Scintillation") )
     {
-      string fibreName (thePrePVName.data ()) ;
-      int index = to_int (fibreName) ;
-      CreateTree::Instance ()->AddScintillationPhoton (index) ;
+      if( !isInPostshower )
+      {
+        string fibreName (thePrePVName.data ()) ;
+        int index = to_int (fibreName) ;
+        CreateTree::Instance ()->AddScintillationPhoton (index) ;
+      }
       
       if( !propagateScintillation ) theTrack->SetTrackStatus(fKillTrackAndSecondaries);
     }
         
     if( (theTrack->GetLogicalVolumeAtVertex()->GetName().contains("fibre")) && (nStep == 1) && (processName == "Cerenkov") )
     {
-      G4bool isInPostshower = false;
-      if( theTrack->GetVertexPosition().z() > 0.5*module_z )
-        isInPostshower = true;
-      
-      if( !isInPostshower )
-        CreateTree::Instance()->tot_phot_cer += 1;
-      else
+      if( isInPostshower )
         CreateTree::Instance()->tot_phot_cer_post += 1;
-      
-      string fibreName (thePrePVName.data ()) ;
-      int index = to_int (fibreName) ;
-      CreateTree::Instance ()->AddCerenkovPhoton (index) ;
-      
-      //CreateTree::Instance()->h_phot_cer_lambda -> Fill( MyMaterials::fromEvToNm(theTrack->GetTotalEnergy()/eV) );
-      //CreateTree::Instance()->h_phot_cer_E      -> Fill( theTrack->GetTotalEnergy()/eV );
-      //CreateTree::Instance()->h_phot_cer_time   -> Fill( thePrePoint->GetGlobalTime()/picosecond );
+      else
+      {
+        CreateTree::Instance()->tot_phot_cer += 1;
+        
+        string fibreName (thePrePVName.data ()) ;
+        int index = to_int (fibreName) ;
+        CreateTree::Instance ()->AddCerenkovPhoton (index) ;
+        
+        //CreateTree::Instance()->h_phot_cer_lambda -> Fill( MyMaterials::fromEvToNm(theTrack->GetTotalEnergy()/eV) );
+        //CreateTree::Instance()->h_phot_cer_E      -> Fill( theTrack->GetTotalEnergy()/eV );
+        //CreateTree::Instance()->h_phot_cer_time   -> Fill( thePrePoint->GetGlobalTime()/picosecond );
+      }
       
       if( !propagateCerenkov ) theTrack->SetTrackStatus(fKillTrackAndSecondaries);      
     }
@@ -154,7 +159,7 @@ void SteppingAction::UserSteppingAction (const G4Step * theStep)
       CreateTree::Instance()->tot_det_phot_cer += 1;
     }
     
-    if( (theTrack->GetLogicalVolumeAtVertex()->GetName().contains("fibre")) && (nStep == 1) )
+    if( (theTrack->GetLogicalVolumeAtVertex()->GetName().contains("fibre")) && (nStep == 1) && (!isInPostshower) )
     {    
       //----------------------------------------------------------
       // storing time, energy and position at gap with fast timing
@@ -251,7 +256,7 @@ void SteppingAction::UserSteppingAction (const G4Step * theStep)
     }
     
     
-    if( thePrePVName == "absorberPV" || thePrePVName.contains("fibre") || thePrePVName.contains("fibre") )
+    if( thePrePVName == "absorberPV" || thePrePVName.contains("fibre") || thePrePVName.contains("hole") )
     {
       G4int iRadius = sqrt( pow(thePrePosition.x()/mm-CreateTree::Instance()->inputInitialPosition->at(0),2) +
                             pow(thePrePosition.y()/mm-CreateTree::Instance()->inputInitialPosition->at(1),2) ) / CreateTree::Instance()->Radial_stepLength;
