@@ -104,6 +104,6 @@ public:
   TTree * attenuationLengths ;
   
   std::vector<float> * attLengths;
-} ;
+};
 
 #endif

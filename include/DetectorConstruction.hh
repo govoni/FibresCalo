@@ -41,6 +41,7 @@
 #include "ConfigFile.hh"
 #include "MyMaterials.hh"
 #include "LedFiberTiming.hh"
+#include "DetectorParameterisation.hh"
 
 #include "G4Material.hh"
 #include "G4VUserDetectorConstruction.hh"
@@ -97,13 +98,20 @@ private:
   G4double module_xy ;       // size of the calo tower containing fibres
   G4int    postshower;       // flag to place a postshower behind the module
   
-  G4int     NfibresAlongY ;        // number of fibres along the Y side of the calo tower
-  G4double  margin ;               // minimum distance between fibres and tower sides
+  G4double margin ;               // minimum distance between fibres and tower sides
+  G4int    nFibresAlongX ;        // number of fibres along the Y side of the calo tower
+  G4int    nFibresAlongY ;        // number of fibres along the Y side of the calo tower
+  G4double fibreDistanceAlongX;
+  G4double fibreDistanceAlongY;
+  G4double startX;
+  G4double startY;
   // FIXME put this in, in future
   //G4Double  tolerance ;            // minimum distance between fibre and module side
   
+  G4int    fibre_scheme ;
   G4int    fibre_material ;
   G4double fibre_cladRIndex;
+  G4int    fibre_isSquare;
   G4double fibre_radius ;
   G4double fibre_length ;      
   G4double fibre_distance ;    // distance between fibres

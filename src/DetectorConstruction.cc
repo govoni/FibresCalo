@@ -31,6 +31,14 @@
 //---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- 
 
 #include "DetectorConstruction.hh"
+
+#include "DetectorParameterisation.hh"
+#include "CreateTree.hh"
+
+#include <algorithm>
+#include <string>
+#include <sstream>
+
 #include "G4MagneticField.hh"
 #include "G4UniformMagField.hh"
 #include "G4FieldManager.hh"
@@ -55,17 +63,11 @@
 #include "G4VisAttributes.hh"
 #include "G4Colour.hh"
 #include "G4SDManager.hh"
-
-
-#include "DetectorConstruction.hh"
+#include "G4PVParameterised.hh"
 #include <G4TransportationManager.hh>
 #include <G4MagneticField.hh>
 #include <G4UniformMagField.hh>
 #include <G4FieldManager.hh>
-#include "CreateTree.hh"
-#include <algorithm>
-#include <string>
-#include <sstream>
 
 using namespace CLHEP;
 
@@ -89,8 +91,10 @@ DetectorConstruction::DetectorConstruction (const string& configFileName)
   config.readInto (module_xy, "module_xy") ;
   config.readInto (postshower, "postshower") ;
   
+  config.readInto (fibre_scheme, "fibre_scheme") ;
   config.readInto (fibre_material, "fibre_material") ;
   config.readInto (fibre_cladRIndex, "fibre_cladRIndex") ;
+  config.readInto (fibre_isSquare, "fibre_isSquare") ;
   config.readInto (fibre_radius, "fibre_radius") ;
   config.readInto (fibre_length, "fibre_length") ;
   config.readInto (fibre_distance, "fibre_distance") ;
@@ -106,10 +110,43 @@ DetectorConstruction::DetectorConstruction (const string& configFileName)
   
   B_field_intensity = config.read<double>("B_field_intensity") * tesla ;
   
-  margin = max (0.25 * fibre_distance, 2 * fibre_radius) ;
-  NfibresAlongY = floor ((module_xy - 2 * margin - 0.5 * fibre_distance) / fibre_distance) + 1 ;
+  
+  margin = std::max( 0.25*fibre_distance, 2.*fibre_radius );
+  G4double staggering = 0.5*fibre_distance*((fibre_scheme+1)%2);
+  G4double staggeredStart = 0.5 + 0.5*(fibre_scheme%2);
+  
+  std::cout << "staggeredStart: " << staggeredStart << std::endl;
+  if( fibre_scheme == 1 || fibre_scheme == 2 ) // dice-4
+  {
+    fibreDistanceAlongX = fibre_distance;
+    fibreDistanceAlongY = fibre_distance;
+    nFibresAlongX = floor( (module_xy - 2.*margin             ) / fibreDistanceAlongX ) + 1 ;
+    nFibresAlongY = floor( (module_xy - 2.*margin - staggering) / fibreDistanceAlongY ) + 1 ;
+    startX = 0.5 * ( module_xy - fibreDistanceAlongX * (nFibresAlongX - 1.0) ) ;
+    startY = 0.5 * ( module_xy - fibreDistanceAlongY * (nFibresAlongY - staggeredStart) ) ;
+  }
+  else if( fibre_scheme == 3 || fibre_scheme == 4 ) // dice-5
+  {
+    fibreDistanceAlongX = 0.8660 * fibre_distance;
+    fibreDistanceAlongY = fibre_distance;
+    nFibresAlongX = floor( (module_xy - 2.*margin)              / fibreDistanceAlongX ) + 1 ;
+    nFibresAlongY = floor( (module_xy - 2.*margin - staggering) / fibreDistanceAlongY ) + 1 ;
+    startX = 0.5 * ( module_xy - fibreDistanceAlongX * (nFibresAlongX - 1.0) ) ;
+    startY = 0.5 * ( module_xy - fibreDistanceAlongY * (nFibresAlongY - staggeredStart) ) ;
+  }
+  else if( fibre_scheme == 5 || fibre_scheme == 6 ) // chessboard
+  {
+    fibreDistanceAlongX = 0.5 * fibre_distance;
+    fibreDistanceAlongY = fibre_distance;
+    nFibresAlongX = floor( (module_xy - 2.*margin)              / fibreDistanceAlongX ) + 1 ;
+    nFibresAlongY = floor( (module_xy - 2.*margin - staggering) / fibreDistanceAlongY ) + 1 ;
+    startX = 0.5 * ( module_xy - fibreDistanceAlongX * (nFibresAlongX - 1.0) ) ;
+    startY = 0.5 * ( module_xy - fibreDistanceAlongY * (nFibresAlongY - staggeredStart) ) ;
+  }
+  
+  
   module_z = fibre_length;
- 
+   
   expHall_x = module_xy * 2 ;
   expHall_y = module_xy * 2 ;
   expHall_z = module_z * 2 ;
@@ -165,52 +202,71 @@ G4VPhysicalVolume* DetectorConstruction::Construct ()
   // The absorber
   // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
   G4VSolid * absorberS = new G4Box ("absorberS", 0.5 * module_xy, 0.5 * module_xy, 0.5 * module_z) ;
-  G4LogicalVolume * absorberLV = new G4LogicalVolume (absorberS, AbMaterial, "absorberLV") ;
+  G4LogicalVolume * absorberLV;
+  absorberLV = new G4LogicalVolume (absorberS, AbMaterial, "absorberLV") ;
   new G4PVPlacement (0, G4ThreeVector (0., 0., 0.), absorberLV, "absorberPV", calorimeterLV, false, 0, checkOverlaps) ;
   
   
   // The holes
   // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
-  G4VSolid * holeS = new G4Tubs ("holeS", fibre_radius, fibre_radius+hole_radius, 0.5*fibre_length, 0.*deg, 360.*deg) ;    
+  G4VSolid * holeS;
+  if( !fibre_isSquare ) holeS = new G4Tubs ("holeS", fibre_radius, fibre_radius+hole_radius, 0.5*fibre_length, 0.*deg, 360.*deg) ;    
+  else
+  {
+    G4VSolid * temp1 = new G4Box ("temp1", fibre_radius+hole_radius, fibre_radius+hole_radius, 0.5*fibre_length) ;
+    G4VSolid * temp2 = new G4Box ("temp2", fibre_radius, fibre_radius, 1.6*fibre_length) ;
+    holeS = new G4SubtractionSolid("holeS",temp1,temp2,0,G4ThreeVector(0.,0.,0.));
+  }
   G4LogicalVolume * holeLV = new G4LogicalVolume (holeS, WoMaterial, "holeLV") ;  
+  //HoleParameterisation* holeParam = new HoleParameterisation(module_xy,fibre_radius,hole_radius,fibre_distance,fibre_length,WoMaterial);
+  //new G4PVParameterised("holeP", holeLV, absorberLV, kUndefined, holeParam->GetNHoles(), holeParam);
   
   
   // the fibres
   // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
-  G4VSolid * fibreS = new G4Tubs ("fibreS", 0., fibre_radius, 0.5*fibre_length, 0.*deg, 360.*deg) ;    
+  G4VSolid * fibreS;
+  if( !fibre_isSquare ) fibreS = new G4Tubs ("fibreS", 0., fibre_radius, 0.5*fibre_length, 0.*deg, 360.*deg) ;
+  else                  fibreS = new G4Box ("fibreS", fibre_radius, fibre_radius, 0.5*fibre_length) ;
   G4LogicalVolume * fibreLV = new G4LogicalVolume (fibreS, ClMaterial, "fibreLV") ;
+  //FibreParameterisation* fibreParam = new FibreParameterisation(module_xy,fibre_radius,fibre_distance,fibre_length,ClMaterial);
+  //new G4PVParameterised("fibreP", fibreLV, absorberLV, kUndefined, fibreParam->GetNFibres(), fibreParam);
   
   
-  // triangular-based fibres matrix filling
+  // fibres matrix filling
   // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
   
-  int count_x = 0 ; // for the staggering
-  float start_x = 0.5 * (module_xy - floor ((module_xy - 2 * margin) / (fibre_distance * 0.8660)) * (fibre_distance * 0.8660)) ;
-  float start_y = 0.5 * (module_xy - fibre_distance * (NfibresAlongY - 0.5)) ;
-  
   // loop on x direction
-  for (float x = -0.5*module_xy+start_x; x <= 0.5*module_xy-margin; x += fibre_distance*0.8660)
+  int countX = 0 ; // for the staggering
+  for (float x = -0.5*module_xy+startX; countX <nFibresAlongX; x += fibreDistanceAlongX)
   {
     // loop on y direction 
-    int count_y = 0 ; // for the staggering
-    
-    for (float y = - 0.5 * module_xy + start_y; count_y < NfibresAlongY; y += fibre_distance)
+    int countY = 0 ; // for the staggering
+    for (float y = - 0.5 * module_xy + startY; countY < nFibresAlongY; y += fibreDistanceAlongY)
     {
-      float y_c = y + 0.5 * fibre_distance * (count_x % 2) ; // fibres staggering
-      int index = count_x * NfibresAlongY + count_y ;
-      CreateTree::Instance ()->fibresPosition->Fill (index, x, y_c);
+      float x_c = x;
+      float y_c = y;
       
-      std::string name = Form("holePV %d",index);
-      new G4PVPlacement (0,G4ThreeVector (x, y_c, 0.), holeLV, name, absorberLV, false, 0, checkOverlaps) ;
-            
+      // staggering
+      if( (fibre_scheme%2) == 0 )
+        y_c += 0.5*fibreDistanceAlongY*(countX%2) ;
+      
+      int index = countX * nFibresAlongY + countY ;
+      CreateTree::Instance() -> fibresPosition -> Fill(index,x_c,y_c);
+      
+      std::string name;
+      
+      name = Form("holePV %d",index);
+      new G4PVPlacement (0,G4ThreeVector(x_c,y_c,0.), holeLV, name, absorberLV, false, 0, checkOverlaps) ;
+      
       name = Form("fibrePV %d",index);
-      new G4PVPlacement (0,G4ThreeVector (x, y_c, 0.), fibreLV, name, absorberLV, false, 0, checkOverlaps) ;
+      new G4PVPlacement (0,G4ThreeVector(x_c,y_c,0.), fibreLV, name, absorberLV, false, 0, checkOverlaps) ;
       
-      ++count_y ;
+      ++countY ;
     } // loop on y direction
     
-    ++count_x ;   
+    ++countX ;   
   } // loop on x direction
+  
   
   
   // fibre gap for photon counting
@@ -258,7 +314,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct ()
   G4Colour  green   (0.00, 1.00, 0.00) ;  // green
   G4Colour  blue    (0.00, 0.00, 1.00) ;  // blue
   G4Colour  cyan    (0.00, 1.00, 1.00) ;  // cyan
-  G4Colour  air     (0.90, 0.94, 1.00) ;  // cyan
+  G4Colour  air     (0.00, 1.00, 1.00) ;  // cyan
   G4Colour  magenta (1.00, 0.00, 1.00) ;  // magenta 
   G4Colour  yellow  (1.00, 1.00, 0.00) ;  // yellow
   G4Colour  brass   (0.80, 0.60, 0.40) ;  // brass
@@ -274,20 +330,21 @@ G4VPhysicalVolume* DetectorConstruction::Construct ()
   VisAttCalorimeter->SetForceWireframe (true) ;
   calorimeterLV->SetVisAttributes (VisAttCalorimeter) ;
     
-  G4VisAttributes* VisAttAbsorber = new G4VisAttributes (brass) ;
+  G4VisAttributes* VisAttAbsorber = new G4VisAttributes (grey) ;
   VisAttAbsorber->SetVisibility (true) ;
-  VisAttAbsorber->SetForceWireframe (true) ;
+  VisAttAbsorber->SetForceWireframe (false) ;
   absorberLV->SetVisAttributes (VisAttAbsorber) ;
   
   G4VisAttributes* VisAttHole = new G4VisAttributes(air);
   VisAttHole->SetVisibility(true);
-  VisAttHole->SetForceWireframe(true);
+  VisAttHole->SetForceWireframe(false);
   holeLV->SetVisAttributes(VisAttHole);
     
-  G4VisAttributes* VisAttfibre = new G4VisAttributes (green) ;
+  G4VisAttributes* VisAttfibre = new G4VisAttributes (yellow) ;
   VisAttfibre->SetVisibility (true) ;
   VisAttfibre->SetForceWireframe (false) ;
   fibreLV->SetVisAttributes (VisAttfibre) ;  
+  
   
   if( !postshower )
   {
